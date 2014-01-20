@@ -21,7 +21,7 @@ using namespace std;
 class RocksDBPHP : public Php::Base {
 private:
     /**
-     *
+     * db
      */
     rocksdb::DB* db;
 
@@ -36,7 +36,7 @@ private:
     rocksdb::Options dboptions;
 
     /**
-     * db path distantion
+     * last opreation status
      */
     rocksdb::Status status;
 
@@ -50,27 +50,20 @@ public:
 
     /*
      * function __construct
-     * @param int $pageNo
-     * @param int $Count
-     * @param string $curPath
+     * @param string path
+     * @param bool create_if_missing
      */
     virtual void __construct(Php::Parameters &params) {
 
         if (params.size() < 1) {
             throw Php::Exception("Requires parameter path");
-            //this->pageNo  = 0;
             return;
         }
-        //this->Count   = (new Php::Value(params[1]))->numericValue();
         this->dbpath = (new Php::Value(params[0]))->stringValue();
         bool create_if_missing = true;
         if (params.size() > 1) {
-            create_if_missing = (bool)params[1]; //(new Php::Value(params[1]))->boolValue();
+            create_if_missing = (bool)params[1];
         }
-
-
-        std::cout << "Test rocksdb work!" << std::endl;
-
 
         this->dboptions.create_if_missing = create_if_missing;
 
@@ -84,31 +77,20 @@ public:
     }
 
     virtual ~RocksDBPHP() {
-        std::cout << "delete db" << std::endl;
         delete db;
     }
     virtual void __destruct() {}
 
-    // SETERS
     /*
-     * function setSpace
-     * @param string $space
-     */
-    /*
-    void setSpace(Php::Parameters &params) {
-        _set_param(params, &this->space);
-    }
-    */
-
-
-    /*
-     * function showCount
-     * set showCount
-     * @param bool $sc
+     * set value by key
+     * function set
+     * @param string key
+     * @param string value
+     * @return bool rezult
      */
     Php::Value set(Php::Parameters &params) {
         if (params.size() < 2) {
-            throw Php::Exception("Requires 2 parameters");
+            throw Php::Exception("Requires 2 parameters: key and value");
             return false;
         }
         std::string key, value;
@@ -121,17 +103,19 @@ public:
     }
 
     /*
-     * function showCount
-     * set showCount
-     * @param bool $sc
+     * set array values by array keys
+     * function mset
+     * @param Php::Array keys
+     * @param Php::Array values
+     * @return bool rezult status
      */
     Php::Value mset(Php::Parameters &params) {
         if (params.size() < 2) {
-            throw Php::Exception("Requires 2 parameter");
+            throw Php::Exception("Requires 2 parameter: array keys and array values");
             return false;
         }
         if(!params[0].isArray() || !params[1].isArray() ) {
-            throw Php::Exception("Requires parameters arrays");
+            throw Php::Exception("Required parameters are arrays");
             return false;
         }
         if(params[0].size() != params[1].size() ) {
@@ -139,11 +123,11 @@ public:
             return false;
         }
 
-        int arrSize = params[0].size();
+        unsigned int arrSize = params[0].size();
         rocksdb::WriteBatch batch;
         std::string key, val;
 
-        for (int i = 0; i < arrSize; i++) {
+        for (unsigned int i = 0; i < arrSize; i++) {
             key = (const char *) params[0][i];
             val = (const char *) params[1][i];
             batch.Put(key, val);
@@ -153,70 +137,38 @@ public:
         return static_cast<bool>(this->status.ok());
     }
 
-    // GETERS
     /*
-     * Номер начального элемента
-     * function getStartPos
-     * @return int
+     * get value by key
+     * function get
+     * @param string key
+     * @return string value or NULL (if not key exist)
      */
     Php::Value get(Php::Parameters &params) {
-    	//this->init();
-        //return this->startPos;
         if (params.size() < 1) {
-            throw Php::Exception("Requires 1 parameters");
+            throw Php::Exception("Requires 1 parameters: key");
             return false;
         }
-
-        /*
-        if(params[0].isString()) {
-            std::cout << "isString" << std::endl;
-        }
-        if(params[0].isArray()) {
-            std::cout << "isArray" << std::endl;
-        }
-        */
-
-
-
         std::string key, value;
         key   = (new Php::Value(params[0]))->stringValue();
+        const Php::Value  phpnull;
 
         this->status = db->Get(rocksdb::ReadOptions(), key, &value);
         std::cout << "Get(" << key <<") = " << value << std::endl;
         if (!this->status.ok()) {
-            //return false;
-            return static_cast<bool>(false);
+            return phpnull;
         }
         return value;
-
     }
 
     /*
-     * Номер начального элемента
-     * function getStartPos
-     * @return int
+     * get array values by array keys
+     * function mget
+     * @param Php::Array keys
+     * @return Php::Array rezult
      */
-    Php::Value del(Php::Parameters &params) {
+    Php::Value mget(Php::Parameters &params) {
         if (params.size() < 1) {
-            throw Php::Exception("Requires 1 parameters");
-            return false;
-        }
-
-        //std::string key;
-        //key   = (new Php::Value(params[0]))->stringValue();
-
-        this->status = db->Delete(rocksdb::WriteOptions(), (new Php::Value(params[0]))->stringValue());
-        return static_cast<bool>(this->status.ok());
-    }
-
-    /*
-     * function showCount
-     * set showCount
-     * @param bool $sc
-     */
-    Php::Value mdel(Php::Parameters &params) {
-        if (params.size() < 1) {
-            throw Php::Exception("Requires 1 parameters");
+            throw Php::Exception("Requires 1 parameters: array keys");
             return false;
         }
         if(!params[0].isArray()) {
@@ -224,11 +176,63 @@ public:
             return false;
         }
 
-        int arrSize = params[0].size();
+        Php::Value array(params[0]), rez;
+        const Php::Value  phpnull;
+        unsigned int arrSize = array.size();
+        std::string key, val;
+
+        for (unsigned int i = 0; i < arrSize; i++) {
+            key   = (const char *) array[i];
+            this->status = db->Get(rocksdb::ReadOptions(), key, &val);
+
+            //std::cout << "Get(" << key <<") = " << val << std::endl;
+
+            if (!this->status.ok()) {
+                rez[i] = phpnull;
+            } else {
+                rez[i] = val;
+            }
+        }
+        return rez;
+    }
+
+    /*
+     * remove key from db
+     * function del
+     * @param string key
+     * @return bool status rezult
+     */
+    Php::Value del(Php::Parameters &params) {
+        if (params.size() < 1) {
+            throw Php::Exception("Requires 1 parameters: key");
+            return false;
+        }
+
+        this->status = db->Delete(rocksdb::WriteOptions(), (new Php::Value(params[0]))->stringValue());
+        return static_cast<bool>(this->status.ok());
+    }
+
+    /*
+     * remove keys from db
+     * function mdel
+     * @param Php::Array keys
+     * @return bool status rezult
+     */
+    Php::Value mdel(Php::Parameters &params) {
+        if (params.size() < 1) {
+            throw Php::Exception("Requires 1 parameters: array keys");
+            return false;
+        }
+        if(!params[0].isArray()) {
+            throw Php::Exception("Requires array");
+            return false;
+        }
+
+        unsigned int arrSize = params[0].size();
         rocksdb::WriteBatch batch;
         std::string key;
 
-        for (int i = 0; i < arrSize; i++) {
+        for (unsigned int i = 0; i < arrSize; i++) {
             key = (const char *) params[0][i];
             batch.Delete(key);
         }
@@ -238,94 +242,19 @@ public:
     }
 
     /*
-     * Номер начального элемента
-     * function getStartPos
-     * @return int
-     */
-    Php::Value mget(Php::Parameters &params) {
-    	//this->init();
-        //return this->startPos;
-        if (params.size() < 1) {
-            throw Php::Exception("Requires 1 parameters");
-            return false;
-        }
-        if(!params[0].isArray()) {
-            throw Php::Exception("Requires array");
-            return false;
-        }
-
-        Php::Value array(params[0]), rez;
-        const Php::Value  phpnull;//.setType(Php::stringType);;
-        int arrSize = array.size();
-
-        //vector<string> rez(arrSize);
-
-        cout << "array.size: " << arrSize << endl;
-
-
-        std::string key, val;
-        rocksdb::Status s;
-        for (unsigned int i = 0; i < arrSize; i++) {
-            cout << "The array: " << array[i] << endl;
-
-            //key   = (new Php::Value(array[i]))->stringValue();
-            //key   = array[i]->stringValue();
-            //array[i]->setType(Php::stringType);
-
-            //.stringValue()
-            //key   = array[i].value();
-            //key   = array[i].rawValue();
-
-            key   = (const char *) array[i];
-
-            //key   = array[i];
-
-
-            s = db->Get(rocksdb::ReadOptions(), key, &val);
-            std::cout << "Get(" << key <<") = " << val << std::endl;
-            if (!s.ok()) {
-                rez[i] = phpnull;//static_cast<bool>(false);
-            } else {
-                rez[i] = val;
-            }
-
-
-
-        }
-
-        return rez;
-
-    }
-
-    /*
-     * Номер начального элемента
-     * function getStartPos
-     * @return int
+     * function getStatus
+     * @param void
+     * @return string status.ToString()
      */
     Php::Value getStatus() {
         return  this->status.ToString();
-    }
-
-
-
-private:
-
-    /*
-     * function _set_param
-     * default int seter
-     */
-    void _set_param(Php::Parameters &params, int *var) {
-        if (params.size() == 0 || (int)params[0] < 0) {
-            return;
-        }
-        *var = (new Php::Value(params[0]))->numericValue();
     }
 
 };
 
 
 
-// Symbols are exported according to the "C" language
+
 extern "C"
 {
     // export the "get_module" function that will be called by the Zend engine
@@ -337,11 +266,11 @@ extern "C"
         // add the custom class ot the extension
         extension.add("RocksDB", Php::Class<RocksDBPHP>({
                 Php::Public("__construct", Php::Method<RocksDBPHP>(&RocksDBPHP::__construct), {
-                    //Php::ByVal("Count",   Php::numericType),
-                    Php::ByVal("path", Php::stringType)
+                    Php::ByVal("path", Php::stringType),
+                    Php::ByVal("cifm", Php::boolType)
                 }),
 
-                //GETERS
+                // GET
                 Php::Public("get", Php::Method<RocksDBPHP>(&RocksDBPHP::get), {
                     Php::ByVal("key", Php::stringType)
                 }),
@@ -349,8 +278,7 @@ extern "C"
                     Php::ByVal("keys", Php::arrayType)
                 }),
 
-                Php::Public("getStatus", Php::Method<RocksDBPHP>(&RocksDBPHP::getStatus)),
-
+                // DEL
                 Php::Public("del", Php::Method<RocksDBPHP>(&RocksDBPHP::del), {
                     Php::ByVal("key", Php::stringType)
                 }),
@@ -358,12 +286,7 @@ extern "C"
                     Php::ByVal("keys", Php::arrayType)
                 }),
 
-                // SETERS
-                /*
-                Php::Public("showCount", Php::Method<RocksDBPHP>(&RocksDBPHP::showCount), {
-                    Php::ByVal("sc", Php::boolType)
-                })
-                */
+                // SET
                 Php::Public("set", Php::Method<RocksDBPHP>(&RocksDBPHP::set), {
                     Php::ByVal("key", Php::stringType),
                     Php::ByVal("val", Php::stringType)
@@ -372,11 +295,11 @@ extern "C"
                     Php::ByVal("keys", Php::arrayType),
                     Php::ByVal("vals", Php::arrayType)
                 }),
+                // OTHER
+                Php::Public("getStatus", Php::Method<RocksDBPHP>(&RocksDBPHP::getStatus)),
 
 
             }));
-
-
 
 
         // return the extension module
