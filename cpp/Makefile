@@ -5,7 +5,7 @@ CPP_FLAGS       = -Wall -c -I. -I./rocksdb -O2 -std=c++11 -fPIC
 PREFIX			= /usr
 #Edit these lines to correspond with your own directories
 LIBRARY_DIR		= ${PREFIX}/lib/php5/20121212
-ROCKSLIB=-L/home/valmat/work/CPP/exemples/rocksdb/rocksdb-src -lrocksdb -lpthread -lrt -lsnappy -lgflags -lz -lbz2 -lmemenv      
+ROCKSLIB= -lrocksdb -lpthread -lrt -lsnappy -lgflags -lz -lbz2
 PHP_CONFIG_DIR	= /etc/php5/cli/conf.d
 
 LD              = g++
