@@ -26,6 +26,7 @@ $time_start = microtime_float();
     
     
     $rocks = new RocksDB('/tmp/wwwdb');
+    /*
     s($rocks);
     s($rocks->getStatus());
     
@@ -38,11 +39,31 @@ $time_start = microtime_float();
 
     //s($rocks->set('key1'));	s($rocks->getStatus());
 
-    s($rocks->set('key1', 'sdfsdf'));
+    s($rocks->set('key2', 'Привет'));
+    s($rocks->getStatus());
+    */
+
+    
+    /*
+    $toSet = array('skey1'=>'val1','skey2'=>'val2','skey3'=>'val3','skey4'=>'val4');
+    s($rocks->mset( 	array_keys($toSet), array_values($toSet)	));
+    s($rocks->getStatus());
+    */
+    
+    /*
+    s($rocks->del('skey2'));
+    s($rocks->getStatus());
+    
+    s($rocks->del('skey2'));
+    s($rocks->getStatus());
+    */
+    
+    s($rocks->mdel(  array('skey1','skey2','skey3')  ));
+    s($rocks->getStatus());
+    
+    s($rocks->mget(array('skey1','skey2','skey3','skey4')));
     s($rocks->getStatus());
 
-    s($rocks->get('key1'));
-    s($rocks->getStatus());
     
     unset($scr);
     
