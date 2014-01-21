@@ -44,7 +44,7 @@ $time_start = microtime_float();
     s($rocks->get('key1'));
     s($rocks->getStatus());
     
-    unset($scr);
+    //unset($scr);
     
     
 ################################################################################

@@ -15,9 +15,9 @@ function microtime_float(){
 $time_start = microtime_float();
 ################################################################################
     
-    function s($a) {
+    function s($rocks) {
 	echo '<hr><pre>';
-	var_export($a);
+	var_export($rocks);
 	echo '</pre><hr>';
     }
     
@@ -26,53 +26,22 @@ $time_start = microtime_float();
     
     
     $rocks = new RocksDB('/tmp/wwwdb');
-    /*
-    s($rocks);
-    s($rocks->getStatus());
-    
-    //s($rocks->get());	s($rocks->getStatus());
-    
-    s($rocks->get('key1'));
-    s($rocks->getStatus());
 
-    //s($rocks->set());	s($rocks->getStatus());
-
-    //s($rocks->set('key1'));	s($rocks->getStatus());
-
-    s($rocks->set('key2', 'Привет'));
+    //$rocks->del('cntr1');
     s($rocks->getStatus());
-    */
-
-    
-    /*
-    $toSet = array('skey1'=>'val1','skey2'=>'val2','skey3'=>'val3','skey4'=>'val4');
-    s($rocks->mset( 	array_keys($toSet), array_values($toSet)	));
+    $rocks->incr('cntr1');
     s($rocks->getStatus());
-    */
+    $rocks->incr('cntr2',-2);
     
-    /*
-    s($rocks->del('skey2'));
-    s($rocks->getStatus());
+    $rocks->set('cntr3', -10);
+    $rocks->incr('cntr3');
     
-    s($rocks->del('skey2'));
-    s($rocks->getStatus());
-    */
-    
-    s($rocks->mdel(  array('skey1','skey2','skey3')  ));
-    s($rocks->getStatus());
-    
-    s($rocks->mget(array('skey1','skey2','skey3','skey4')));
+    s($rocks->mget(array('cntr1','cntr2','cntr3','cntr4')));
     s($rocks->getStatus());
     
 
 
-foreach($rocks as $key => $value) {
-    var_dump($key, $value);
-    echo "\n";
-}
 
-    
-   //unset($scr);
    
    
    
@@ -84,7 +53,7 @@ foreach($rocks as $key => $value) {
   /* 
 class myIterator implements Iterator {
     private $position = 0;
-    private $array = array(
+    private $rocksrray = array(
         "firstelement",
         "secondelement",
         "lastelement",

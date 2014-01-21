@@ -1,6 +1,7 @@
 CPP             = g++
 RM              = rm -f
-CPP_FLAGS       = -Wall -c -I. -I./rocksdb -O2 -std=c++11 -fPIC
+PHP_DIR         = /usr/include/php5
+CPP_FLAGS       = -Wall -c -I. -I./rocksdb -O2 -I${PHP_DIR} -I${PHP_DIR}/main -I${PHP_DIR}/ext -I${PHP_DIR}/Zend -I${PHP_DIR}/TSRM -std=c++11 -fPIC
 
 PREFIX			= /usr
 #Edit these lines to correspond with your own directories
