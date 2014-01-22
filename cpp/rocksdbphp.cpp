@@ -320,13 +320,6 @@ public:
         return value;
     }
 
-
-/*
-  virtual std::vector<Status> MultiGet(const ReadOptions& options,
-                                       const std::vector<Slice>& keys,
-                                       std::vector<std::string>* values) = 0;
-*/
-
     /**
      * get array values by array keys
      * function mget
@@ -343,51 +336,23 @@ public:
             return false;
         }
 
-        Php::Value array(params[0]), rez;
+        Php::Value rez;
         const Php::Value  phpnull;
-        unsigned int arrSize = array.size();
-
+        unsigned int arrSize = params[0].size();
 
         std::vector<rocksdb::Slice> keys(arrSize);
-        std::vector<std::string> values;
-        std::vector<rocksdb::Status> statuses;
-        for (unsigned int i = 0; i < arrSize; i++) {
-            keys[i] = (const char *) array[i];
-        }
+        std::vector<std::string> values(arrSize);
+        std::vector<rocksdb::Status> statuses(arrSize);
 
-        std::cout << keys.size() << std::endl;
+        for (unsigned int i = 0; i < arrSize; i++) {
+            keys[i] = (const char *) params[0][i];
+        }
 
         statuses = db->MultiGet(rocksdb::ReadOptions(), keys, &values);
 
         for (unsigned int i = 0; i < arrSize; i++) {
-            std::cout << "Get(" << keys[i].ToString() <<") = " << values[i] << std::endl;
-
-            if (!statuses[i].ok()) {
-                rez[keys[i].ToString()] = phpnull;
-            } else {
-                rez[keys[i].ToString()] = values[i];
-            }
+            rez[keys[i].ToString()] = (statuses[i].ok()) ? (Php::Value) values[i] : phpnull;
         }
-
-        /*
-        Php::Value array(params[0]), rez;
-        const Php::Value  phpnull;
-        unsigned int arrSize = array.size();
-        std::string key, val;
-
-        for (unsigned int i = 0; i < arrSize; i++) {
-            key   = (const char *) array[i];
-            this->status = db->Get(rocksdb::ReadOptions(), key, &val);
-
-            //std::cout << "Get(" << key <<") = " << val << std::endl;
-
-            if (!this->status.ok()) {
-                rez[key] = phpnull;
-            } else {
-                rez[key] = val;
-            }
-        }
-        */
         return rez;
     }
 
