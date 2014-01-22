@@ -1,10 +1,9 @@
 /**
- *  myscrnav.cpp
- *  app myScrNav
- *  Печать, навигационной строки для листания экранов (pageinator),
- *  Расчет стартовой точки и лимита для постраничного вывода элементов
+ *  rocksdbphp.cpp
+ *  app RocksDB
+ *  implementation fast key/value storage RocksDB for php
  *  @author valmat <ufabiz@gmail.com>
- *  @github https://github.com/valmat/myscrnav
+ *  @github https://github.com/valmat/rocksdbphp
  */
 
 
@@ -22,118 +21,38 @@
  */
 //#include <php.h>
 //#include "zend_iterators.h"
-#include <regex>
 
 
 
-using namespace std;
+//using namespace std;
 
-//namespace rocksdb {
-class UInt64AddOperator : public rocksdb::AssociativeMergeOperator {
- public:
-    virtual bool Merge(
-        const rocksdb::Slice& key,
-        const rocksdb::Slice* existing_value,
-        const rocksdb::Slice& value,
-        std::string* new_value,
-        rocksdb::Logger* logger) const override {
+namespace RocksDB_PHP {
+	class Int64Incrementor : public rocksdb::AssociativeMergeOperator {
+	 public:
+	    virtual bool Merge(
+	        const rocksdb::Slice& key,
+	        const rocksdb::Slice* existing_value,
+	        const rocksdb::Slice& value,
+	        std::string* new_value,
+	        rocksdb::Logger* logger) const override {
 
-        // assuming 0 if no existing value
-        int64_t existing = 0;
-        if (existing_value) {
-             //existing = atoi(existing_value.ToString().c_str());
-             existing = std::strtoull(existing_value->ToString().c_str(),0,10);
+	        // assuming 0 if no existing value
+	        int64_t existing = 0;
+	        if (existing_value) {
+	             existing = std::strtoull(existing_value->ToString().c_str(), nullptr, 10);
+	        }
 
-            /*
-            if (!Deserialize(*existing_value, &existing)) {
-                // if existing_value is corrupted, treat it as 0
-                Log(logger, "existing value corruption");
-                existing = 0;
-            }
-            */
-        }
+	        int64_t incr = std::strtoull(value.ToString().c_str(),0,10);
+	        int64_t newval = existing + incr;
+	        *new_value = std::to_string(newval);
+	        return true;        // always return true for this, since we treat all errors as "zero".
+	    }
 
-        //uint64_t oper;
-        //uint64_t oper = atoi(value.ToString().c_str());
-        int64_t oper = std::strtoull(value.ToString().c_str(),0,10);
-
-        /*
-        if (!Deserialize(value, &oper)) {
-            // if operand is corrupted, treat it as 0
-            Log(logger, "operand value corruption");
-            oper = 0;
-        }
-        */
-
-
-        int64_t newval = existing + oper;
-        //*new_value = Serialize(new);
-        *new_value = std::to_string(newval);
-        return true;        // always return true for this, since we treat all errors as "zero".
-    }
-
-    virtual const char* Name() const override {
-        return "UInt64AddOperator";
-    }
-
-};
-//}
-
-
-class RocksDBPHPCounter : public Php::Base {
-
-public:
-    RocksDBPHPCounter() = default;
-
-    RocksDBPHPCounter(rocksdb::DB* db, rocksdb::Options *poptions, std::string k) :
-    key(k)
-    {
-        auto f = [](int x, int y) -> int { int z = x + y; return z; };
-        std::cout << f(5,6) << std::endl;
-
-        this->db = db;
-        this->poptions = poptions;
-    }
-
-    virtual ~RocksDBPHPCounter() {}
-
-    /**
-     * get value by key
-     * function get
-     * @param string key
-     * @return string value or NULL (if not key exist)
-     */
-    void incr(Php::Parameters &params) {
-        int64_t iv = 1;
-        if (params.size() > 0) {
-            iv = (int)params[0];
-        }
-
-        string serialized =std::to_string(iv);
-
-        //db->Merge(*poptions, key, serialized);
-        db->Merge(rocksdb::WriteOptions(), key, serialized);
-    }
-
-//private:
-    /**
-     * function __construct
-     * @param string path
-     * @param bool create_if_missing
-     */
-    virtual void __construct() {
-        std::cout << "__construct" << std::endl;
-    };
-    virtual void __destruct() {
-        std::cout << "__destruct" << std::endl;
-    }
-private:
-    std::string key;
-    rocksdb::DB* db;
-    rocksdb::Options *poptions;
-
-
-};
+	    virtual const char* Name() const override {
+	        return "Int64Incrementor";
+	    }
+	};
+}
 
 
 class RocksDBPHP : public Php::Base//, public zend_object_iterator
@@ -147,7 +66,7 @@ private:
     /**
      * db path distantion
      */
-    string dbpath;
+    std::string dbpath;
 
     /**
      * db path distantion
@@ -158,12 +77,6 @@ private:
      * last opreation status
      */
     rocksdb::Status status;
-
-    /**
-     * last opreation status
-     */
-    bool counter_option_seted = false;
-
 
 
 public:
@@ -188,7 +101,7 @@ public:
         }
 
         this->dboptions.create_if_missing = create_if_missing;
-        this->dboptions.merge_operator.reset(new UInt64AddOperator);
+        this->dboptions.merge_operator.reset(new RocksDB_PHP::Int64Incrementor);
 
         this->status = rocksdb::DB::Open(this->dboptions, this->dbpath, &this->db);
         std::cerr << this->status.ToString() << std::endl;
@@ -196,7 +109,6 @@ public:
         if (!this->status.ok())  {
             throw Php::Exception(   this->status.ToString()  );
         }
-
     }
 
     virtual ~RocksDBPHP() {
@@ -259,33 +171,6 @@ public:
 
         return static_cast<bool>(this->status.ok());
     }
-
-
-    /**
-     * set array values by array keys
-     * function mset
-     * @param Php::Array keys
-     * @param Php::Array values
-     * @return bool rezult status
-     */
-    /*
-    Php::Value mset1(Php::Parameters &params) {
-        if (params.size() < 1) {
-            throw Php::Exception("Requires 1 parameter");
-            return false;
-        }
-        if(!params[0].isObject()) {
-            throw Php::Exception("Required parameters are object");
-            return false;
-        }
-
-        Php::Member m = params[0];
-        for (auto iter = m.begin(); iter != m.end(); iter++) {
-            //iter->declare(entry);
-            std::cout << "#" << std::endl;
-        }
-    }
-    */
 
     /**
      * get value by key
@@ -437,61 +322,23 @@ public:
         return  this->status.ToString();
     }
 
-
     /**
-     * function getStatus
-     * @param void
-     * @return string status.ToString()
+     * function incr
+     * @param string key
+     * @param int incval, default: 1
+     * @return void
      */
-    Php::Value Counter(Php::Parameters &params) {
-        if (params.size() < 1) {
-            throw Php::Exception("Requires parameter: key");
-            return false;
-        }
-        if(!counter_option_seted) {
-            counter_option_seted = true;
-            //this->dboptions.merge_operator.reset(new UInt64AddOperator);
-        }
-
-        Php::Value ret;
-
-        /*
-
-        RocksDBPHPCounter *q = new RocksDBPHPCounter(db, &this->dboptions, params[0].stringValue());
-
-        ret = (php::Base)RocksDBPHPCounter(db, &this->dboptions, params[0].stringValue());
-        //ret.setType(Php::Type::objectType);
-
-        std::cout << ret.type() << std::endl;
-        */
-        return ret;
-    }
-
     void incr(Php::Parameters &params) {
         if (params.size() < 1) {
             throw Php::Exception("Requires parameter: key");
             return;
         }
-
         int64_t iv = 1;
         if (params.size() > 1) {
             iv = params[1].numericValue();
         }
-
-
-        if(!counter_option_seted) {
-            counter_option_seted = true;
-            this->dboptions.merge_operator.reset(new UInt64AddOperator);
-        }
-
-
-
-        string val =std::to_string(iv);
-
-        //db->Merge(*poptions, key, serialized);
-        this->status = db->Merge(rocksdb::WriteOptions(), params[0].stringValue(), val);
+        this->status = db->Merge(rocksdb::WriteOptions(), params[0].stringValue(), std::to_string(iv));
     }
-
 };
 
 
@@ -539,9 +386,6 @@ extern "C"
                 }),
                 // OTHER
                 Php::Public("getStatus", Php::Method<RocksDBPHP>(&RocksDBPHP::getStatus)),
-                Php::Public("Counter", Php::Method<RocksDBPHP>(&RocksDBPHP::Counter), {
-                    Php::ByVal("key", Php::stringType)
-                }),
 
                 Php::Public("incr", Php::Method<RocksDBPHP>(&RocksDBPHP::incr), {
                     Php::ByVal("key", Php::stringType),
@@ -552,25 +396,6 @@ extern "C"
                     Php::ByVal("key", Php::stringType),
                    // Php::ByRef("val", Php::stringType)
                 }),
-
-
-
-            }));
-
-        extension.add("RocksDBCounter", Php::Class<RocksDBPHPCounter>({
-                Php::Protected("__construct", Php::Method<RocksDBPHPCounter>(&RocksDBPHPCounter::__construct), {
-                }),
-                // GET
-                /*
-                Php::Public("get", Php::Method<RocksDBPHPCounter>(&RocksDBPHPCounter::get), {
-                    Php::ByVal("key", Php::stringType)
-                }),
-                */
-                Php::Public("incr", Php::Method<RocksDBPHPCounter>(&RocksDBPHPCounter::incr), {
-                    Php::ByVal("incrVal", Php::numericType)
-                }),
-
-
             }));
 
 
