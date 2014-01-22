@@ -66,7 +66,7 @@ class UInt64AddOperator : public rocksdb::AssociativeMergeOperator {
         */
 
 
-        auto newval = existing + oper;
+        int64_t newval = existing + oper;
         //*new_value = Serialize(new);
         *new_value = std::to_string(newval);
         return true;        // always return true for this, since we treat all errors as "zero".
@@ -75,6 +75,7 @@ class UInt64AddOperator : public rocksdb::AssociativeMergeOperator {
     virtual const char* Name() const override {
         return "UInt64AddOperator";
     }
+
 };
 //}
 
@@ -319,6 +320,13 @@ public:
         return value;
     }
 
+
+/*
+  virtual std::vector<Status> MultiGet(const ReadOptions& options,
+                                       const std::vector<Slice>& keys,
+                                       std::vector<std::string>* values) = 0;
+*/
+
     /**
      * get array values by array keys
      * function mget
@@ -338,6 +346,33 @@ public:
         Php::Value array(params[0]), rez;
         const Php::Value  phpnull;
         unsigned int arrSize = array.size();
+
+
+        std::vector<rocksdb::Slice> keys(arrSize);
+        std::vector<std::string> values;
+        std::vector<rocksdb::Status> statuses;
+        for (unsigned int i = 0; i < arrSize; i++) {
+            keys[i] = (const char *) array[i];
+        }
+
+        std::cout << keys.size() << std::endl;
+
+        statuses = db->MultiGet(rocksdb::ReadOptions(), keys, &values);
+
+        for (unsigned int i = 0; i < arrSize; i++) {
+            std::cout << "Get(" << keys[i].ToString() <<") = " << values[i] << std::endl;
+
+            if (!statuses[i].ok()) {
+                rez[keys[i].ToString()] = phpnull;
+            } else {
+                rez[keys[i].ToString()] = values[i];
+            }
+        }
+
+        /*
+        Php::Value array(params[0]), rez;
+        const Php::Value  phpnull;
+        unsigned int arrSize = array.size();
         std::string key, val;
 
         for (unsigned int i = 0; i < arrSize; i++) {
@@ -352,6 +387,7 @@ public:
                 rez[key] = val;
             }
         }
+        */
         return rez;
     }
 
