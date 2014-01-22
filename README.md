@@ -34,14 +34,23 @@ exec `make` and `sudo make install`
     
     // multiget
     $rocks->mget(array('skey1','skey2','skey3','skey4'));
-    echo $rocks->getStatus();
+    //echo $rocks->getStatus(); // not supported for mget
     
-    // multidel
-    $rocks->mdel(  array('skey1','skey2','skey3')  );
-    echo $rocks->getStatus();
+    // isset
+    // fast check exist key
+    $rocks->isset('key1');
+    //echo $rocks->getStatus(); // not supported for isset
     
+    // incr
+    // incriment/decriment (integer counter)
+    $rocks->incr('ckey1');
+    $rocks->incr('ckey2', 5);
+    $rocks->incr('ckey2', -2);
+    echo $rocks->getStatus();
+
 
 ## Note
 Currently under development
 
-License BSD
+## License
+BSD

@@ -103,16 +103,6 @@ public:
      * @param string key
      * @return string value or NULL (if not key exist)
      */
-     /*
-    Php::Value get(Php::Parameters &params) {
-        if (params.size() < 1) {
-            throw Php::Exception("Requires 1 parameters: key");
-            return false;
-        }
-        return params[0];
-    }
-    */
-    //Php::Value incr(Php::Parameters &params) {
     void incr(Php::Parameters &params) {
         int64_t iv = 1;
         if (params.size() > 0) {
@@ -313,7 +303,7 @@ public:
         const Php::Value  phpnull;
 
         this->status = db->Get(rocksdb::ReadOptions(), key, &value);
-        std::cout << "Get(" << key <<") = " << value << std::endl;
+        //std::cout << "Get(" << key <<") = " << value << std::endl;
         if (!this->status.ok()) {
             return phpnull;
         }
@@ -354,6 +344,43 @@ public:
             rez[keys[i].ToString()] = (statuses[i].ok()) ? (Php::Value) values[i] : phpnull;
         }
         return rez;
+    }
+
+    /**
+     * get value by key
+     * function get
+     * @param string key
+     * @return string value or NULL (if not key exist)
+     */
+/*
+  virtual bool KeyMayExist(const ReadOptions& options,
+                           const Slice& key,
+                           std::string* value,
+                           bool* value_found = nullptr)
+*/
+
+    Php::Value isset(Php::Parameters &params) {
+        unsigned int sz = params.size();
+
+        if (sz < 1) {
+            throw Php::Exception("Requires 1 parameters: key");
+            return false;
+        }
+        std::string key, value;
+        key   = (const char *)params[0];
+        bool r;
+
+        r = db->KeyMayExist(rocksdb::ReadOptions(), key, &value);
+        //std::cout << "Get(" << key <<") = " << value << std::endl;
+        //std::cout << "sz" << sz << std::endl;
+
+        /*
+        if (r && sz > 1) {
+            params[1] = (Php::Value) value;
+        }
+        */
+
+        return r;
     }
 
     /**
@@ -520,6 +547,12 @@ extern "C"
                     Php::ByVal("key", Php::stringType),
                     Php::ByVal("incrVal", Php::numericType)
                 }),
+
+                Php::Public("isset", Php::Method<RocksDBPHP>(&RocksDBPHP::isset), {
+                    Php::ByVal("key", Php::stringType),
+                   // Php::ByRef("val", Php::stringType)
+                }),
+
 
 
             }));
