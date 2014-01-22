@@ -363,6 +363,9 @@ extern "C"
                 Php::Public("get", Php::Method<RocksDBPHP>(&RocksDBPHP::get), {
                     Php::ByVal("key", Php::stringType)
                 }),
+                Php::Public("__get", Php::Method<RocksDBPHP>(&RocksDBPHP::get), {
+                    Php::ByVal("key", Php::stringType)
+                }),
                 Php::Public("mget", Php::Method<RocksDBPHP>(&RocksDBPHP::mget), {
                     Php::ByVal("keys", Php::arrayType)
                 }),
@@ -371,12 +374,19 @@ extern "C"
                 Php::Public("del", Php::Method<RocksDBPHP>(&RocksDBPHP::del), {
                     Php::ByVal("key", Php::stringType)
                 }),
+                Php::Public("__unset", Php::Method<RocksDBPHP>(&RocksDBPHP::del), {
+                    Php::ByVal("key", Php::stringType)
+                }),
                 Php::Public("mdel", Php::Method<RocksDBPHP>(&RocksDBPHP::mdel), {
                     Php::ByVal("keys", Php::arrayType)
                 }),
 
                 // SET
                 Php::Public("set", Php::Method<RocksDBPHP>(&RocksDBPHP::set), {
+                    Php::ByVal("key", Php::stringType),
+                    Php::ByVal("val", Php::stringType)
+                }),
+                Php::Public("__set", Php::Method<RocksDBPHP>(&RocksDBPHP::set), {
                     Php::ByVal("key", Php::stringType),
                     Php::ByVal("val", Php::stringType)
                 }),
@@ -396,6 +406,10 @@ extern "C"
                     Php::ByVal("key", Php::stringType),
                    // Php::ByRef("val", Php::stringType)
                 }),
+                Php::Public("__isset", Php::Method<RocksDBPHP>(&RocksDBPHP::isset), {
+                    Php::ByVal("key", Php::stringType)
+                }),
+                 
             }));
 
 

@@ -16,15 +16,21 @@ exec `make` and `sudo make install`
     $rocks = new RocksDB('/tmp/wwwdb');
     
     // get
-    $rocks->get('key1');
+    echo $rocks->get('key1');
+    //same:
+    echo $rocks->key1;
     echo $rocks->getStatus();
 
     // set
-    $rocks->set('key1', 'sdfsdf')
+    $rocks->set('key1', 'sdfsdf');
+    //same:
+    $rocks->key1 = 'sdfsdf';
     echo $rocks->getStatus();
     
     // delete
-    $rocks->del('skey2');
+    $rocks->del('key2');
+    //same:
+    unset($rocks->skey2);
     echo $rocks->getStatus();
     
     // multiset
@@ -39,6 +45,8 @@ exec `make` and `sudo make install`
     // isset
     // fast check exist key
     $rocks->isset('key1');
+    //same:
+    isset($rocks->key1);
     //echo $rocks->getStatus(); // not supported for isset
     
     // incr
