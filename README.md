@@ -16,6 +16,7 @@ exec `make` and `sudo make install`
     $rocks = new RocksDB('/tmp/wwwdb');
     
     // get
+    // if key not exist, return NULL
     echo $rocks->get('key1');
     //same:
     echo $rocks->key1;
