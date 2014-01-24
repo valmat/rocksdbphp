@@ -77,6 +77,7 @@ namespace RocksDBPHP {
 	     * last opreation status
 	     */
 	    rocksdb::Status status;
+    
 
 
 	public:
@@ -94,7 +95,7 @@ namespace RocksDBPHP {
 	            throw Php::Exception("Requires parameter path");
 	            return;
 	        }
-	        this->dbpath = (new Php::Value(params[0]))->stringValue();
+	        this->dbpath = params[0].stringValue();
 	        bool create_if_missing = true;
 	        if (params.size() > 1) {
 	            create_if_missing = (bool)params[1];
@@ -102,7 +103,6 @@ namespace RocksDBPHP {
 
 	        this->dboptions.create_if_missing = create_if_missing;
 	        this->dboptions.merge_operator.reset(new Int64Incrementor);
-
 	        this->status = rocksdb::DB::Open(this->dboptions, this->dbpath, &this->db);
 	        std::cerr << this->status.ToString() << std::endl;
 
@@ -113,6 +113,7 @@ namespace RocksDBPHP {
 
 	    virtual ~Driver() {
 	        delete db;
+	        //delete Incrementor; //not required : std::shared_ptr
 	    }
 	    virtual void __destruct() {}
 
@@ -129,8 +130,8 @@ namespace RocksDBPHP {
 	            return false;
 	        }
 	        std::string key, value;
-	        key   = (new Php::Value(params[0]))->stringValue();
-	        value = (new Php::Value(params[1]))->stringValue();
+	        key   = params[0].stringValue();
+	        value = params[1].stringValue();
 
 	        this->status = db->Put(rocksdb::WriteOptions(), key, value);
 
@@ -184,7 +185,7 @@ namespace RocksDBPHP {
 	            return false;
 	        }
 	        std::string key, value;
-	        key   = (new Php::Value(params[0]))->stringValue();
+	        key   = params[0].stringValue();
 	        const Php::Value  phpnull;
 
 	        this->status = db->Get(rocksdb::ReadOptions(), key, &value);
@@ -232,18 +233,11 @@ namespace RocksDBPHP {
 	    }
 
 	    /**
-	     * get value by key
-	     * function get
+	     * fast check exist key
+	     * function isset
 	     * @param string key
-	     * @return string value or NULL (if not key exist)
+	     * @return bool (true if key exist)
 	     */
-	/*
-	  virtual bool KeyMayExist(const ReadOptions& options,
-	                           const Slice& key,
-	                           std::string* value,
-	                           bool* value_found = nullptr)
-	*/
-
 	    Php::Value isset(Php::Parameters &params) {
 	        unsigned int sz = params.size();
 
@@ -256,6 +250,7 @@ namespace RocksDBPHP {
 	        bool r;
 
 	        r = db->KeyMayExist(rocksdb::ReadOptions(), key, &value);
+	        //It is not guaranteed that value will be determined
 	        //std::cout << "Get(" << key <<") = " << value << std::endl;
 	        //std::cout << "sz" << sz << std::endl;
 
@@ -280,7 +275,7 @@ namespace RocksDBPHP {
 	            return false;
 	        }
 
-	        this->status = db->Delete(rocksdb::WriteOptions(), (new Php::Value(params[0]))->stringValue());
+	        this->status = db->Delete(rocksdb::WriteOptions(), params[0].stringValue());
 	        return static_cast<bool>(this->status.ok());
 	    }
 
@@ -337,6 +332,7 @@ namespace RocksDBPHP {
 	        if (params.size() > 1) {
 	            iv = params[1].numericValue();
 	        }
+
 	        this->status = db->Merge(rocksdb::WriteOptions(), params[0].stringValue(), std::to_string(iv));
 	    }
 	};
@@ -404,7 +400,7 @@ extern "C"
 
                 Php::Public("isset", Php::Method<RocksDBPHP::Driver>(&RocksDBPHP::Driver::isset), {
                     Php::ByVal("key", Php::stringType),
-                   // Php::ByRef("val", Php::stringType)
+                    //Php::ByRef("val", Php::stringType) not work. required fix at PHP-CPP
                 }),
                 Php::Public("__isset", Php::Method<RocksDBPHP::Driver>(&RocksDBPHP::Driver::isset), {
                     Php::ByVal("key", Php::stringType)
