@@ -132,7 +132,7 @@ foreach($it as $key => $value) {
 ################################################################################
 
 echo '<br>';
-//echo '<hr>time: '.ceil( 1000*(microtime_float() - $time_start)*1000 ).' MicroSec<br>';
+echo '<hr>time: '.ceil( 1000*(microtime_float() - $time_start)*1000 ).' MicroSec<br>';
 echo '<hr>time: '.ceil( (microtime_float() - $time_start)*1000 ).' mSec<br>';
 
 echo '<hr>memory usage: '.ceil( (memory_get_usage()/1024-$memory_get_usage_start)*10)/10 .'Kb<br>';

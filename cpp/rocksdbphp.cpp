@@ -114,6 +114,7 @@ namespace RocksDBPHP {
 	    virtual ~Driver() {
 	        //delete Incrementor; //not required : std::shared_ptr
 	        delete db;
+	        std::cout << "~Driver()" << std::endl;
 	    }
 	    virtual void __destruct() {}
 
@@ -135,7 +136,7 @@ namespace RocksDBPHP {
 	        //std::cout << "set("<< key << ")=" << value << std::endl;
 
 	        this->status = db->Put(rocksdb::WriteOptions(), key, value);
-	        return static_cast<bool>(this->status.ok());
+	        return (bool)(this->status.ok());
 	    }
 
 	    /**
@@ -167,12 +168,12 @@ namespace RocksDBPHP {
 	            key = params[0][i].value().stringValue();
 	            val = params[1][i].value().stringValue();
 	            
-	            std::cout << "set("<< key << ")=" << val << std::endl;
+	            //std::cout << "set("<< key << ")=" << val << std::endl;
 	            batch.Put(key, val);
 	        }
 	        this->status = db->Write(rocksdb::WriteOptions(), &batch);
 
-	        return static_cast<bool>(this->status.ok());
+	        return (bool)(this->status.ok());
 	    }
 
 	    /**
@@ -186,20 +187,11 @@ namespace RocksDBPHP {
 	            throw Php::Exception("Requires 1 parameters: key");
 	            return false;
 	        }
-	        //std::string key, value;
-	        std::string value, k1 = params[0].stringValue();
-	        //rocksdb::Slice key( (std::string)params[0].stringValue());
-	        rocksdb::Slice key( k1);
-
-	        //key   = params[0].stringValue();
-
+	        std::string key, value;
+	        key   = params[0].stringValue();
 	        const Php::Value  phpnull;
 
 	        this->status = db->Get(rocksdb::ReadOptions(), key, &value);
-	        //std::cout << "Get(" << key <<") = " << value << std::endl;
-	        std::cout << "Get_c(" << key.ToString().c_str()<< ") : " <<" Get_s(" << key.ToString() <<") = " << value << std::endl;
-	        std::cout << "Slice.size()=" << key.size() <<" string.size()=" << k1.size() << std::endl;
-
 	        if (!this->status.ok()) {
 	            return phpnull;
 	        }
@@ -229,90 +221,20 @@ namespace RocksDBPHP {
 	        std::vector<std::string> ks;
 	        ks.reserve(arrSize);
 
-	        // Slice keys that only refers to 'ks'!
-	        //std::vector<rocksdb::Slice> keys(arrSize);
+	        // Slice keys that only refers to string ks!
 	        std::vector<rocksdb::Slice> keys;
 	        keys.reserve(arrSize);
 
 	        std::vector<std::string> values(arrSize);
 	        std::vector<rocksdb::Status> statuses(arrSize);
 
-	        std::string k;
 	        for (unsigned int i = 0; i < arrSize; i++) {
-	            //keys[i] = (const char *) params[0][i];
-	            //keys[i] = params[0][i].value().stringValue().c_str();
-	            //keys[i] = rocksdb::Slice(params[0][i].value().stringValue());
-	            
-	            //k = (std::string) (params[0][i].value().stringValue()+'\0');
-	            //k = (std::string) (params[0][i].value().stringValue());
-	            
-
-	            //k = params[0][i].value().stringValue();
-	            //ks[i] = "key#"+ std::to_string(i);
-	            ks.push_back( "key#"+ std::to_string(i) );
-
-
-	            //keys[i] = rocksdb::Slice(k);
-
-
-	            //keys[i] = rocksdb::Slice( (const char *) k.c_str()+'\0', k.size()+1);
-
-	            //keys[i] = rocksdb::Slice( k.c_str());
-	            //keys[i] = (const char *) k.c_str();
-	            //keys.push_back( rocksdb::Slice((const char*)(k.c_str()+'\0'), size_t(k.size()+1) ) );
-	            
-	            //keys.push_back( rocksdb::Slice(k) );
-
-	            //keys.push_back( rocksdb::Slice(k.c_str(), k.size()) );
-	            //keys[i] = rocksdb::Slice( k.c_str(), k.size());
-	            
-	            //keys[i] = rocksdb::Slice( ks[i] );
+	            ks.push_back( params[0][i].value().stringValue() );
 	            keys.push_back( ks[i] );
-	            
-	            std::cout << ks[i] <<" <-> "<< keys[i].ToString() << std::endl;
-	            
 	        }
-
-	        
-
-	        std::cout << "Принт кейс" << std::endl;
-	        for (unsigned int i = 0; i < arrSize; i++) {
-		        std::cout << "Get_c(" << keys[i].ToString().c_str() << ") : " <<" Get_s(" << keys[i].ToString() <<") " << std::endl;
-	        }
-
 	        statuses = db->MultiGet(rocksdb::ReadOptions(), keys, &values);
-
-	        std::cout << "Принт кейс" << std::endl;
 	        for (unsigned int i = 0; i < arrSize; i++) {
-		        std::cout << "Get_c(" << keys[i].ToString().c_str() << ") : " <<" Get_s(" << keys[i].ToString() <<") " << std::endl;
-		        //std::cout << "Slice.size()=" << keys[i].size() <<" string.size()=" << keys[i].ToString().size() << std::endl;
-	        }
-
-	        std::cout << "Принт кейс 3" << std::endl;
-	        for (unsigned int i = 0; i < arrSize; i++) {
-		        std::cout << "Get_c(" << keys[i].ToString().c_str() << ") : " <<" Get_s(" << keys[i].ToString() <<") " << std::endl;
-		        
-		        std::cout << " Get_a(";
-		        for (unsigned int j = 0; j < keys[i].size(); j++) {
-		        	std::cout << keys[i][j];
-	        	}
-	        	std::cout << ") " << std::endl;
-
-
-	        }
-
-
-
-	        std::cout << "Rezult:" << std::endl;
-	        for (unsigned int i = 0; i < arrSize; i++) {
-	        	k = keys[i].ToString();
-
-	        	std::cout << "Get(" << k <<") = " << values[i] << std::endl;
-		        std::cout << "Get_c(" << keys[i].ToString().c_str() << ") : " <<" Get_s(" << keys[i].ToString() <<") = " <<  values[i] << std::endl;
-		        std::cout << "Slice.size()=" << keys[i].size() <<" string.size()=" << k.size() << std::endl;
-
-
-	            rez[std::string(keys[i].ToString())] = (statuses[i].ok()) ? (Php::Value) values[i] : phpnull;
+	            rez[ks[i]] = (statuses[i].ok()) ? (Php::Value) values[i] : phpnull;
 	        }
 	        return rez;
 	    }
@@ -361,7 +283,7 @@ namespace RocksDBPHP {
 	        }
 
 	        this->status = db->Delete(rocksdb::WriteOptions(), params[0].stringValue());
-	        return static_cast<bool>(this->status.ok());
+	        return (bool)(this->status.ok());
 	    }
 
 	    /**
@@ -385,12 +307,12 @@ namespace RocksDBPHP {
 	        std::string key;
 
 	        for (unsigned int i = 0; i < arrSize; i++) {
-	            key = (const char *) params[0][i];
+	            key = params[0][i].value().stringValue();
 	            batch.Delete(key);
 	        }
 	        this->status = db->Write(rocksdb::WriteOptions(), &batch);
 
-	        return static_cast<bool>(this->status.ok());
+	        return (bool)(this->status.ok());
 	    }
 
 	    /**
