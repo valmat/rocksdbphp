@@ -256,7 +256,8 @@ namespace RocksDBPHP {
 	     * @param string key
 	     * @return bool status rezult
 	     */
-	    Php::Value del(Php::Parameters &params) {
+	    Php::Value del(Php::Parameters &params)
+	    {
 	        if (params.size() < 1) {
 	            throw Php::Exception("Requires 1 parameters: key");
 	            return false;
@@ -272,26 +273,27 @@ namespace RocksDBPHP {
 	     * @param Php::Array keys
 	     * @return bool status rezult
 	     */
-	    Php::Value mdel(Php::Parameters &params) {
+	    Php::Value mdel(Php::Parameters &params)
+	    {
+	        // Check parameters
 	        if (params.size() < 1) {
-	            throw Php::Exception("Requires 1 parameters: array keys");
+	            throw Php::Exception("Requires 1 parameter: array or itarable object");
 	            return false;
 	        }
-	        if(!params[0].isArray()) {
-	            throw Php::Exception("Requires array");
+	        if(!params[0].isArray() && !params[1].isObject() ) {
+	            throw Php::Exception("Required parameters is array or itarable object");
 	            return false;
 	        }
 
-	        unsigned int arrSize = params[0].size();
+	        // create RocksDB batch
 	        rocksdb::WriteBatch batch;
-	        std::string key;
-
-	        for (unsigned int i = 0; i < arrSize; i++) {
-	            key = params[0][i].value().stringValue();
-	            batch.Delete(key);
+	        // iterate over param to filling batch
+	        for(auto &iter: params[0])
+	        {
+	            //Php::out << "set("<< iter.first.stringValue() << ")=" << iter.second.stringValue() << std::endl;
+	            batch.Delete(iter.second.stringValue());
 	        }
 	        _status = _db->Write(rocksdb::WriteOptions(), &batch);
-
 	        return (bool)(_status.ok());
 	    }
 
@@ -300,7 +302,8 @@ namespace RocksDBPHP {
 	     * @param void
 	     * @return string status.ToString()
 	     */
-	    Php::Value getStatus() {
+	    Php::Value getStatus()
+	    {
 	        return  _status.ToString();
 	    }
 
@@ -310,7 +313,8 @@ namespace RocksDBPHP {
 	     * @param int incval, default: 1
 	     * @return void
 	     */
-	    void incr(Php::Parameters &params) {
+	    void incr(Php::Parameters &params)
+	    {
 	        if (params.size() < 1) {
 	            throw Php::Exception("Requires parameter: key");
 	            return;
@@ -319,7 +323,6 @@ namespace RocksDBPHP {
 	        if (params.size() > 1) {
 	            iv = params[1].numericValue();
 	        }
-
 	        _status = _db->Merge(rocksdb::WriteOptions(), params[0].stringValue(), std::to_string(iv));
 	    }
 	};
