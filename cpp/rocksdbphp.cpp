@@ -7,7 +7,6 @@
  */
 
 
-
 #include <string>
 #include <iostream>
 #include <phpcpp.h>
@@ -15,18 +14,11 @@
 #include "rocksdb/write_batch.h"
 #include "rocksdb/merge_operator.h"
 
-//#include <php5/Zend/zend_iterators.h>
-/**
- *  PHP includes
- */
-//#include <php.h>
-//#include "zend_iterators.h"
 
 
-
-//using namespace std;
 
 namespace RocksDBPHP {
+
 	class Int64Incrementor : public rocksdb::AssociativeMergeOperator {
 	 public:
 	    virtual bool Merge(
@@ -52,31 +44,30 @@ namespace RocksDBPHP {
 	        return "Int64Incrementor";
 	    }
 	};
-//}
 
-//namespace RocksDBPHP {
+	
 	class Driver : public Php::Base//, public zend_object_iterator
 	{
 	private:
 	    /**
 	     * db
 	     */
-	    rocksdb::DB* db;
+	    rocksdb::DB* _db;
 
 	    /**
 	     * db path distantion
 	     */
-	    std::string dbpath;
+	    std::string _dbpath;
 
 	    /**
 	     * db path distantion
 	     */
-	    rocksdb::Options dboptions;
+	    rocksdb::Options _dboptions;
 
 	    /**
 	     * last opreation status
 	     */
-	    rocksdb::Status status;
+	    rocksdb::Status _status;
     
 
 
@@ -89,31 +80,32 @@ namespace RocksDBPHP {
 	     * @param string path
 	     * @param bool create_if_missing
 	     */
-	    virtual void __construct(Php::Parameters &params) {
+	    virtual void __construct(Php::Parameters &params)
+	    {
 
 	        if (params.size() < 1) {
 	            throw Php::Exception("Requires parameter path");
 	            return;
 	        }
-	        this->dbpath = params[0].stringValue();
+	        _dbpath = params[0].stringValue();
 	        bool create_if_missing = true;
 	        if (params.size() > 1) {
 	            create_if_missing = (bool)params[1];
 	        }
 
-	        this->dboptions.create_if_missing = create_if_missing;
-	        this->dboptions.merge_operator.reset(new Int64Incrementor);
-	        this->status = rocksdb::DB::Open(this->dboptions, this->dbpath, &this->db);
-	        std::cerr << this->status.ToString() << std::endl;
+	        _dboptions.create_if_missing = create_if_missing;
+	        _dboptions.merge_operator.reset(new Int64Incrementor);
+	        _status = rocksdb::DB::Open(_dboptions, _dbpath, &_db);
+	        std::cerr << _status.ToString() << std::endl;
 
-	        if (!this->status.ok())  {
-	            throw Php::Exception(   this->status.ToString()  );
+	        if (!_status.ok())  {
+	            throw Php::Exception( _status.ToString()  );
 	        }
 	    }
 
 	    virtual ~Driver() {
 	        //delete Incrementor; //not required : std::shared_ptr
-	        delete db;
+	        delete _db;
 	        std::cout << "~Driver()" << std::endl;
 	    }
 	    virtual void __destruct() {}
@@ -135,65 +127,59 @@ namespace RocksDBPHP {
 	        value = params[1].stringValue();
 	        //std::cout << "set("<< key << ")=" << value << std::endl;
 
-	        this->status = db->Put(rocksdb::WriteOptions(), key, value);
-	        return (bool)(this->status.ok());
+	        _status = _db->Put(rocksdb::WriteOptions(), key, value);
+	        return (bool)(_status.ok());
 	    }
 
 	    /**
-	     * set array values by array keys
+	     * Set multiple values ​​using an array or object
 	     * function mset
 	     * @param Php::Array keys
 	     * @param Php::Array values
 	     * @return bool rezult status
 	     */
-	    Php::Value mset(Php::Parameters &params) {
-	        if (params.size() < 2) {
-	            throw Php::Exception("Requires 2 parameter: array keys and array values");
+	    Php::Value mset(Php::Parameters &params)
+	    {
+	        // Check parameters
+	        if (params.size() < 1) {
+	            throw Php::Exception("Requires 1 parameter: array or itarable object");
 	            return false;
 	        }
-	        if(!params[0].isArray() || !params[1].isArray() ) {
-	            throw Php::Exception("Required parameters are arrays");
-	            return false;
-	        }
-	        if(params[0].size() != params[1].size() ) {
-	            throw Php::Exception("Dimensions do not match");
+	        if(!params[0].isArray() && !params[1].isObject() ) {
+	            throw Php::Exception("Required parameters is array or itarable object");
 	            return false;
 	        }
 
-	        unsigned int arrSize = params[0].size();
+	        // create RocksDB batch
 	        rocksdb::WriteBatch batch;
-	        std::string key, val;
-
-	        for (unsigned int i = 0; i < arrSize; i++) {
-	            key = params[0][i].value().stringValue();
-	            val = params[1][i].value().stringValue();
-	            
-	            //std::cout << "set("<< key << ")=" << val << std::endl;
-	            batch.Put(key, val);
+	        // iterate over param to filling batch
+	        for(auto &iter: params[0])
+	        {
+	            //std::cout << "set("<< iter.first.stringValue() << ")=" << iter.second.stringValue() << std::endl;
+	            batch.Put(iter.first.stringValue(), iter.second.stringValue());
 	        }
-	        this->status = db->Write(rocksdb::WriteOptions(), &batch);
-
-	        return (bool)(this->status.ok());
+	        _status = _db->Write(rocksdb::WriteOptions(), &batch);
+	        return (bool)(_status.ok());
 	    }
 
 	    /**
 	     * get value by key
 	     * function get
 	     * @param string key
-	     * @return string value or NULL (if not key exist)
+	     * @return string value or NULL (if the key is not exist)
 	     */
-	    Php::Value get(Php::Parameters &params) {
+	    Php::Value get(Php::Parameters &params)
+	    {
 	        if (params.size() < 1) {
 	            throw Php::Exception("Requires 1 parameters: key");
 	            return false;
 	        }
-	        std::string key, value;
-	        key   = params[0].stringValue();
-	        const Php::Value  phpnull;
+	        std::string key = params[0].stringValue();
+	        std::string value;
 
-	        this->status = db->Get(rocksdb::ReadOptions(), key, &value);
-	        if (!this->status.ok()) {
-	            return phpnull;
+	        _status = _db->Get(rocksdb::ReadOptions(), key, &value);
+	        if (!_status.ok()) {
+	            return nullptr; // cast to `Php::NULL`
 	        }
 	        return value;
 	    }
@@ -206,16 +192,15 @@ namespace RocksDBPHP {
 	     */
 	    Php::Value mget(Php::Parameters &params) {
 	        if (params.size() < 1) {
-	            throw Php::Exception("Requires 1 parameters: array keys");
+	            throw Php::Exception("Requires 1 parameter: array keys or itarable object");
 	            return false;
 	        }
 	        if(!params[0].isArray()) {
-	            throw Php::Exception("Requires array");
+	            throw Php::Exception("Required parameters is array or itarable object");
 	            return false;
 	        }
 
 	        Php::Value rez;
-	        const Php::Value  phpnull;
 	        unsigned int arrSize = params[0].size();
 
 	        std::vector<std::string> ks;
@@ -232,9 +217,9 @@ namespace RocksDBPHP {
 	            ks.push_back( params[0][i].value().stringValue() );
 	            keys.push_back( ks[i] );
 	        }
-	        statuses = db->MultiGet(rocksdb::ReadOptions(), keys, &values);
+	        statuses = _db->MultiGet(rocksdb::ReadOptions(), keys, &values);
 	        for (unsigned int i = 0; i < arrSize; i++) {
-	            rez[ks[i]] = (statuses[i].ok()) ? (Php::Value) values[i] : phpnull;
+	            rez[ks[i]] = (statuses[i].ok()) ? (Php::Value) values[i] : nullptr;
 	        }
 	        return rez;
 	    }
@@ -256,7 +241,7 @@ namespace RocksDBPHP {
 	        key   = params[0].stringValue();
 	        bool r;
 
-	        r = db->KeyMayExist(rocksdb::ReadOptions(), key, &value);
+	        r = _db->KeyMayExist(rocksdb::ReadOptions(), key, &value);
 	        //It is not guaranteed that value will be determined
 	        //std::cout << "Get(" << key <<") = " << value << std::endl;
 	        //std::cout << "sz" << sz << std::endl;
@@ -282,8 +267,8 @@ namespace RocksDBPHP {
 	            return false;
 	        }
 
-	        this->status = db->Delete(rocksdb::WriteOptions(), params[0].stringValue());
-	        return (bool)(this->status.ok());
+	        _status = _db->Delete(rocksdb::WriteOptions(), params[0].stringValue());
+	        return (bool)(_status.ok());
 	    }
 
 	    /**
@@ -310,9 +295,9 @@ namespace RocksDBPHP {
 	            key = params[0][i].value().stringValue();
 	            batch.Delete(key);
 	        }
-	        this->status = db->Write(rocksdb::WriteOptions(), &batch);
+	        _status = _db->Write(rocksdb::WriteOptions(), &batch);
 
-	        return (bool)(this->status.ok());
+	        return (bool)(_status.ok());
 	    }
 
 	    /**
@@ -321,7 +306,7 @@ namespace RocksDBPHP {
 	     * @return string status.ToString()
 	     */
 	    Php::Value getStatus() {
-	        return  this->status.ToString();
+	        return  _status.ToString();
 	    }
 
 	    /**
@@ -340,7 +325,7 @@ namespace RocksDBPHP {
 	            iv = params[1].numericValue();
 	        }
 
-	        this->status = db->Merge(rocksdb::WriteOptions(), params[0].stringValue(), std::to_string(iv));
+	        _status = _db->Merge(rocksdb::WriteOptions(), params[0].stringValue(), std::to_string(iv));
 	    }
 	};
 }
