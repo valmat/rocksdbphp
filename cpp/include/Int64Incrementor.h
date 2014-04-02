@@ -12,11 +12,13 @@ namespace RocksDBPHP
 	class Int64Incrementor : public rocksdb::AssociativeMergeOperator {
 	 public:
 	    virtual bool Merge(
-	        const rocksdb::Slice& key,
-	        const rocksdb::Slice* existing_value,
-	        const rocksdb::Slice& value,
-	        std::string* new_value,
-	        rocksdb::Logger* logger) const override {
+					        const rocksdb::Slice& key,
+					        const rocksdb::Slice* existing_value,
+					        const rocksdb::Slice& value,
+					        std::string* new_value,
+					        rocksdb::Logger* logger
+					      ) const override 
+	    {
 
 	        // assuming 0 if no existing value
 	        int64_t existing = 0;

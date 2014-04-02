@@ -35,10 +35,9 @@ namespace RocksDBPHP {
 	    rocksdb::Status _status;
     
 
-
 	public:
 
-	    Driver() = default;// noexcept
+	    Driver() = default;
 
 	    /**
 	     * function __construct
@@ -61,6 +60,7 @@ namespace RocksDBPHP {
 	        _dboptions.create_if_missing = create_if_missing;
 	        _dboptions.merge_operator.reset(new Int64Incrementor);
 	        _status = rocksdb::DB::Open(_dboptions, _dbpath, &_db);
+
 	        //Php::out << _status.ToString() << std::endl;
 
 	        if (!_status.ok())  {
@@ -68,8 +68,9 @@ namespace RocksDBPHP {
 	        }
 	    }
 
-	    virtual ~Driver() {
-	        //delete Incrementor; //not required : std::shared_ptr
+	    virtual ~Driver()
+	    {
+	        //delete Incrementor; <-- not required : std::shared_ptr
 	        delete _db;
 	        Php::out << "~Driver()" << std::endl;
 	    }
@@ -155,36 +156,46 @@ namespace RocksDBPHP {
 	     * @param Php::Array keys
 	     * @return Php::Array rezult
 	     */
-	    Php::Value mget(Php::Parameters &params) {
+	    Php::Value mget(Php::Parameters &params)
+	    {
 	        if (params.size() < 1) {
 	            throw Php::Exception("Requires 1 parameter: array keys or itarable object");
 	            return false;
 	        }
-	        if(!params[0].isArray()) {
+	        if(!params[0].isArray() && !params[0].isObject()) {
 	            throw Php::Exception("Required parameters is array or itarable object");
 	            return false;
 	        }
 
 	        Php::Value rez;
-	        unsigned int arrSize = params[0].size();
-
-	        std::vector<std::string> ks;
-	        ks.reserve(arrSize);
-
-	        // Slice keys that only refers to string ks!
+	        
+	        // keys array
+	        std::vector<std::string> strKeys;
+	        // Slice keys that only refers to string strKeys!
 	        std::vector<rocksdb::Slice> keys;
-	        keys.reserve(arrSize);
+	        // If param is array and its size is defined
+	        if(!params[0].isArray()) {
+	        	unsigned int arrSize = params[0].size();
+	        	keys.reserve(arrSize);
+	        	strKeys.reserve(arrSize);
+	        }
+	        // iterate over param to filling keys
+	        for(auto &iter: params[0])
+	        {
+	            strKeys.push_back( iter.second.stringValue() );
+	            keys.push_back( strKeys.back() );
+	        }
 
+	        unsigned int arrSize = strKeys.size();
+	        // result values
 	        std::vector<std::string> values(arrSize);
+	        // result statuses
 	        std::vector<rocksdb::Status> statuses(arrSize);
 
-	        for (unsigned int i = 0; i < arrSize; i++) {
-	            ks.push_back( params[0][i].value().stringValue() );
-	            keys.push_back( ks[i] );
-	        }
 	        statuses = _db->MultiGet(rocksdb::ReadOptions(), keys, &values);
+	        
 	        for (unsigned int i = 0; i < arrSize; i++) {
-	            rez[ks[i]] = (statuses[i].ok()) ? (Php::Value) values[i] : nullptr;
+	            rez[strKeys[i]] = (statuses[i].ok()) ? (Php::Value) values[i] : nullptr;
 	        }
 	        return rez;
 	    }

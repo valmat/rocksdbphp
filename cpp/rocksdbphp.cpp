@@ -49,7 +49,7 @@ extern "C"
 		            Php::ByVal("key", Php::Type::String)
 		        })
 		        .method("mget", &RocksDBPHP::Driver::mget, {
-		            Php::ByVal("keys", Php::Type::Array)
+		            Php::ByVal("keys", Php::Type::Object)
 		        })
 
 		        // DEL
@@ -73,8 +73,7 @@ extern "C"
 		            Php::ByVal("val", Php::Type::String)
 		        })
 		        .method("mset", &RocksDBPHP::Driver::mset, {
-		            Php::ByVal("keys", Php::Type::Array),
-		            Php::ByVal("vals", Php::Type::Array)
+		            Php::ByVal("keys", Php::Type::Object)
 		        })
 		        // OTHER
 		        .method("getStatus", &RocksDBPHP::Driver::getStatus)
