@@ -347,7 +347,16 @@ namespace RocksDBPHP {
 
 
 
-extern "C"
+
+
+
+
+
+
+
+
+// Symbols are exported according to the "C" language
+extern "C" 
 {
     // export the "get_module" function that will be called by the Zend engine
     PHPCPP_EXPORT void *get_module()
@@ -355,68 +364,102 @@ extern "C"
         // create extension
         static Php::Extension extension("RocksDBphp","0.1");
 
-        // add the custom class ot the extension
-        extension.add("RocksDB", Php::Class<RocksDBPHP::Driver>({
-                Php::Public("__construct", Php::Method<RocksDBPHP::Driver>(&RocksDBPHP::Driver::__construct), {
-                    Php::ByVal("path", Php::stringType),
-                    Php::ByVal("cifm", Php::boolType)
-                }),
 
-                // GET
-                Php::Public("get", Php::Method<RocksDBPHP::Driver>(&RocksDBPHP::Driver::get), {
-                    Php::ByVal("key", Php::stringType)
-                }),
-                Php::Public("__get", Php::Method<RocksDBPHP::Driver>(&RocksDBPHP::Driver::get), {
-                    Php::ByVal("key", Php::stringType)
-                }),
-                Php::Public("mget", Php::Method<RocksDBPHP::Driver>(&RocksDBPHP::Driver::mget), {
-                    Php::ByVal("keys", Php::arrayType)
-                }),
-
-                // DEL
-                Php::Public("del", Php::Method<RocksDBPHP::Driver>(&RocksDBPHP::Driver::del), {
-                    Php::ByVal("key", Php::stringType)
-                }),
-                Php::Public("__unset", Php::Method<RocksDBPHP::Driver>(&RocksDBPHP::Driver::del), {
-                    Php::ByVal("key", Php::stringType)
-                }),
-                Php::Public("mdel", Php::Method<RocksDBPHP::Driver>(&RocksDBPHP::Driver::mdel), {
-                    Php::ByVal("keys", Php::arrayType)
-                }),
-
-                // SET
-                Php::Public("set", Php::Method<RocksDBPHP::Driver>(&RocksDBPHP::Driver::set), {
-                    Php::ByVal("key", Php::stringType),
-                    Php::ByVal("val", Php::stringType)
-                }),
-                Php::Public("__set", Php::Method<RocksDBPHP::Driver>(&RocksDBPHP::Driver::set), {
-                    Php::ByVal("key", Php::stringType),
-                    Php::ByVal("val", Php::stringType)
-                }),
-                Php::Public("mset", Php::Method<RocksDBPHP::Driver>(&RocksDBPHP::Driver::mset), {
-                    Php::ByVal("keys", Php::arrayType),
-                    Php::ByVal("vals", Php::arrayType)
-                }),
-                // OTHER
-                Php::Public("getStatus", Php::Method<RocksDBPHP::Driver>(&RocksDBPHP::Driver::getStatus)),
-
-                Php::Public("incr", Php::Method<RocksDBPHP::Driver>(&RocksDBPHP::Driver::incr), {
-                    Php::ByVal("key", Php::stringType),
-                    Php::ByVal("incrVal", Php::numericType)
-                }),
-
-                Php::Public("isset", Php::Method<RocksDBPHP::Driver>(&RocksDBPHP::Driver::isset), {
-                    Php::ByVal("key", Php::stringType),
-                    //Php::ByRef("val", Php::stringType) not work. required fix at PHP-CPP
-                }),
-                Php::Public("__isset", Php::Method<RocksDBPHP::Driver>(&RocksDBPHP::Driver::isset), {
-                    Php::ByVal("key", Php::stringType)
-                }),
-                 
-            }));
+        Php::Class<RocksDBPHP::Driver> RocksDBPphpDriver("RocksDB");
 
 
+		//RocksDBPphpDriver.method("myMethod", &TestBaseClass::MyCustomClass::myMethod, Php::Final, {});
+
+
+
+
+
+
+
+
+
+
+
+
+
+        RocksDBPphpDriver.method("__construct", &RocksDBPHP::Driver::__construct, {
+            Php::ByVal("path", Php::Type::String),
+            Php::ByVal("cifm", Php::Type::Bool)
+        }),
+
+        // GET
+        RocksDBPphpDriver.method("get", &RocksDBPHP::Driver::get, {
+            Php::ByVal("key", Php::Type::String)
+        }),
+        RocksDBPphpDriver.method("__get", &RocksDBPHP::Driver::get, {
+            Php::ByVal("key", Php::Type::String)
+        }),
+        RocksDBPphpDriver.method("mget", &RocksDBPHP::Driver::mget, {
+            Php::ByVal("keys", Php::Type::Array)
+        }),
+
+        // DEL
+        RocksDBPphpDriver.method("del", &RocksDBPHP::Driver::del, {
+            Php::ByVal("key", Php::Type::String)
+        }),
+        RocksDBPphpDriver.method("__unset", &RocksDBPHP::Driver::del, {
+            Php::ByVal("key", Php::Type::String)
+        }),
+        RocksDBPphpDriver.method("mdel", &RocksDBPHP::Driver::mdel, {
+            Php::ByVal("keys", Php::Type::Array)
+        }),
+
+        // SET
+        RocksDBPphpDriver.method("set", &RocksDBPHP::Driver::set, {
+            Php::ByVal("key", Php::Type::String),
+            Php::ByVal("val", Php::Type::String)
+        }),
+        RocksDBPphpDriver.method("__set", &RocksDBPHP::Driver::set, {
+            Php::ByVal("key", Php::Type::String),
+            Php::ByVal("val", Php::Type::String)
+        }),
+        RocksDBPphpDriver.method("mset", &RocksDBPHP::Driver::mset, {
+            Php::ByVal("keys", Php::Type::Array),
+            Php::ByVal("vals", Php::Type::Array)
+        }),
+        // OTHER
+        RocksDBPphpDriver.method("getStatus", &RocksDBPHP::Driver::getStatus),
+
+        RocksDBPphpDriver.method("incr", &RocksDBPHP::Driver::incr, {
+            Php::ByVal("key", Php::Type::String),
+            Php::ByVal("incrVal", Php::Type::Numeric)
+        }),
+
+        RocksDBPphpDriver.method("isset", &RocksDBPHP::Driver::isset, {
+            Php::ByVal("key", Php::Type::String),
+            //Php::ByRef("val", Php::Type::String) not work. required fix at PHP-CPP
+        }),
+        RocksDBPphpDriver.method("__isset", &RocksDBPHP::Driver::isset, {
+            Php::ByVal("key", Php::Type::String)
+        }),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+        // add the class to the extension
+        extension.add(std::move(RocksDBPphpDriver));
+
+        
         // return the extension module
-        return extension.module();
+        return extension;
     }
 }
