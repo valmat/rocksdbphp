@@ -10,8 +10,8 @@
 
 namespace RocksDBPHP {
 
-	// forward declaration
-	class MultiGetIterator;
+    // forward declaration
+    class MultiGetIterator;
 
     /**
      *  A sample MultiGetResult class, that can be used to map string-to-strings
@@ -25,10 +25,10 @@ namespace RocksDBPHP {
     private:
         // Internally, a C++ unordered_map is used
         std::unordered_map<std::string, unsigned int> accessMap;
-
+        
         // size of keys array
         unsigned int arrSize;
-
+        
         // keys array
         std::vector<std::string> strKeys;
         
@@ -37,7 +37,7 @@ namespace RocksDBPHP {
         
         // result statuses
         std::vector<rocksdb::Status> statuses;
-
+    
     public:
         /**
          *  C++ constructor
@@ -48,10 +48,10 @@ namespace RocksDBPHP {
             std::vector<rocksdb::Slice> keys;
             // If param is array and its size is defined
             if(!params[0].isArray()) {
-                    unsigned int arrSize = params[0].size();
-                    keys.reserve(arrSize);
-                    strKeys.reserve(arrSize);
-                    accessMap.reserve(arrSize);
+                unsigned int arrSize = params[0].size();
+                keys.reserve(arrSize);
+                strKeys.reserve(arrSize);
+                accessMap.reserve(arrSize);
             }
             // iterate over param to filling keys
             unsigned int ind = 0;
@@ -61,14 +61,14 @@ namespace RocksDBPHP {
                 keys.push_back( strKeys.back() );
                 accessMap[strKeys.back()] = ind++;
             }
-
+            
             // size of keys array
             arrSize = strKeys.size();
             // result values
             values.reserve(arrSize);
             // result statuses
             statuses.reserve(arrSize);
-
+            
             // filling values
             statuses = db->MultiGet(rocksdb::ReadOptions(), keys, &values);
         }
@@ -88,7 +88,6 @@ namespace RocksDBPHP {
         
         /**
          *  Method from the Php::Countable interface that 
-         *  returns the number of elements in the map
          *  @return long
          */
         virtual long count() override 
@@ -116,9 +115,9 @@ namespace RocksDBPHP {
          */
         virtual void offsetSet(const Php::Value &key, const Php::Value &value) override
         {
-            // ??? 
+            // ???
+            // XXX this will not work as expected, you need to fix.
             values[accessMap[key.stringValue()]] = value.stringValue();
-
         }
         
         /**
@@ -133,7 +132,7 @@ namespace RocksDBPHP {
         
         /**
          *  Remove a member
-         *	This is an expensive operation. Better not to use it
+         *  This is an expensive operation. Better not to use it
          *  @param key
          */
         virtual void offsetUnset(const Php::Value &key) override
@@ -152,13 +151,6 @@ namespace RocksDBPHP {
          *  @return Php::Iterator
          */
         virtual Php::Iterator *getIterator() override;
-        /*
-        {
-            // construct a new map iterator on the heap
-            // the PHP-CPP library will delete it when ready
-            return new MultiGetIterator(this);
-        }
-        */
     };
 
     /**
@@ -189,16 +181,16 @@ namespace RocksDBPHP {
          *  @param  map         The internal C++ map that is being iterated over
          */
         MultiGetIterator(
-        					MultiGetResult *object,
-							const std::vector<std::string>& strKeys,
-							const std::vector<std::string>& values,
-							const std::vector<rocksdb::Status>& statuses
-        				) :
-            			Php::Iterator(object),
-			            _strKeys(strKeys),
-			            _values(values),
-			            _statuses(statuses),
-			            size(strKeys.size())
+                            MultiGetResult *object,
+                            const std::vector<std::string>& strKeys,
+                            const std::vector<std::string>& values,
+                            const std::vector<rocksdb::Status>& statuses
+                        ) :
+                        Php::Iterator(object),
+                        _strKeys(strKeys),
+                        _values(values),
+                        _statuses(statuses),
+                        size(strKeys.size())
         {}
             
         /**
@@ -222,9 +214,9 @@ namespace RocksDBPHP {
         virtual Php::Value current() override
         {
             if(_statuses[_ind].ok())
-            	return _values[_ind];
+                return _values[_ind];
             else
-            	return nullptr;
+                return nullptr;
         }
         
         /**
@@ -263,4 +255,4 @@ namespace RocksDBPHP {
     }
 
 
-}	// End of namespace
+}   // End of namespace
