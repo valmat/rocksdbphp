@@ -81,7 +81,7 @@ namespace RocksDBPHP {
         /**
          *  C++ destructpr
          */
-        virtual ~MultiGetResult() { Php::out << "~MultiGetResult" << std::endl;}
+        virtual ~MultiGetResult() {}
         
         //forbidden __construct
         virtual void __construct(void) {}
@@ -93,6 +93,8 @@ namespace RocksDBPHP {
          */
         virtual long count() override 
         { 
+            // IT NOT WORK. need debug PHP-CPP
+            Php::out << "count()=" << arrSize << std::endl;
             return arrSize; 
         }
 
@@ -197,18 +199,12 @@ namespace RocksDBPHP {
 			            _values(values),
 			            _statuses(statuses),
 			            size(strKeys.size())
-        {
-        	
-			Php::out << "MultiGetIterator(...) " << std::endl;
-        	Php::out << "size of strKeys "<< strKeys.size() << std::endl;
-        	Php::out << "size of values "<< values.size() << std::endl;
-        	Php::out << "size of statuses "<< statuses.size() << std::endl;
-        }
+        {}
             
         /**
          *  Destructor
          */
-        virtual ~MultiGetIterator() {Php::out << " ~MultiGetIterator"<< std::endl;}
+        virtual ~MultiGetIterator() {}
         
         /**
          *  Is the iterator on a valid position
@@ -216,7 +212,6 @@ namespace RocksDBPHP {
          */
         virtual bool valid() override
         {
-            Php::out << "valid("<< _ind << ")~~" << size << std::endl;
             return (_ind >=0 && _ind < size);
         }
         
@@ -226,20 +221,10 @@ namespace RocksDBPHP {
          */
         virtual Php::Value current() override
         {
-            Php::out << std::endl << "_statuses["<<_ind<<"].ok() = "<< _statuses[_ind].ok() << ")" << std::endl;
-            Php::out << std::endl << "_statuses["<<_ind<<"].ToString() = "<< _statuses[_ind].ToString() << ")" << std::endl;
-            Php::out << std::endl << "_values["<<_ind<<"] = "<< _values[_ind] << ")" << std::endl;
-
-            Php::out << std::endl << "current("<< _ind << ")" << std::endl;
-            
             if(_statuses[_ind].ok())
             	return _values[_ind];
             else
             	return nullptr;
-
-            //return ( (_statuses[_ind].ok()) ? (_values[_ind]) : nullptr );
-            //return nullptr;
-            return _values[_ind];
         }
         
         /**
@@ -248,7 +233,6 @@ namespace RocksDBPHP {
          */
         virtual Php::Value key() override
         {
-            Php::out << "key("<< _ind << ")" << std::endl;
             return _strKeys[_ind];
         }
         
@@ -258,7 +242,6 @@ namespace RocksDBPHP {
         virtual void next() override
         {
             ++_ind;
-            Php::out << std::endl << "next("<< _ind << ")" << std::endl;
         }
         
         /**
@@ -266,7 +249,6 @@ namespace RocksDBPHP {
          */
         virtual void rewind() override
         {
-            Php::out << "rewind("<< _ind << ")" << std::endl;
             _ind = 0;
         }
     };

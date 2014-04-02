@@ -72,7 +72,6 @@ namespace RocksDBPHP {
 	    {
 	        //delete Incrementor; <-- not required : std::shared_ptr
 	        delete _db;
-	        Php::out << "~Driver()" << std::endl;
 	    }
 	    virtual void __destruct() {}
 
