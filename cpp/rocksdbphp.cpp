@@ -346,15 +346,6 @@ namespace RocksDBPHP {
 }
 
 
-
-
-
-
-
-
-
-
-
 // Symbols are exported according to the "C" language
 extern "C" 
 {
@@ -365,100 +356,71 @@ extern "C"
         static Php::Extension extension("RocksDBphp","0.1");
 
 
-        Php::Class<RocksDBPHP::Driver> RocksDBPphpDriver("RocksDB");
-
-
-		//RocksDBPphpDriver.method("myMethod", &TestBaseClass::MyCustomClass::myMethod, Php::Final, {});
-
-
-
-
-
-
-
-
-
-
-
-
-
-        RocksDBPphpDriver.method("__construct", &RocksDBPHP::Driver::__construct, {
-            Php::ByVal("path", Php::Type::String),
-            Php::ByVal("cifm", Php::Type::Bool)
-        }),
-
-        // GET
-        RocksDBPphpDriver.method("get", &RocksDBPHP::Driver::get, {
-            Php::ByVal("key", Php::Type::String)
-        }),
-        RocksDBPphpDriver.method("__get", &RocksDBPHP::Driver::get, {
-            Php::ByVal("key", Php::Type::String)
-        }),
-        RocksDBPphpDriver.method("mget", &RocksDBPHP::Driver::mget, {
-            Php::ByVal("keys", Php::Type::Array)
-        }),
-
-        // DEL
-        RocksDBPphpDriver.method("del", &RocksDBPHP::Driver::del, {
-            Php::ByVal("key", Php::Type::String)
-        }),
-        RocksDBPphpDriver.method("__unset", &RocksDBPHP::Driver::del, {
-            Php::ByVal("key", Php::Type::String)
-        }),
-        RocksDBPphpDriver.method("mdel", &RocksDBPHP::Driver::mdel, {
-            Php::ByVal("keys", Php::Type::Array)
-        }),
-
-        // SET
-        RocksDBPphpDriver.method("set", &RocksDBPHP::Driver::set, {
-            Php::ByVal("key", Php::Type::String),
-            Php::ByVal("val", Php::Type::String)
-        }),
-        RocksDBPphpDriver.method("__set", &RocksDBPHP::Driver::set, {
-            Php::ByVal("key", Php::Type::String),
-            Php::ByVal("val", Php::Type::String)
-        }),
-        RocksDBPphpDriver.method("mset", &RocksDBPHP::Driver::mset, {
-            Php::ByVal("keys", Php::Type::Array),
-            Php::ByVal("vals", Php::Type::Array)
-        }),
-        // OTHER
-        RocksDBPphpDriver.method("getStatus", &RocksDBPHP::Driver::getStatus),
-
-        RocksDBPphpDriver.method("incr", &RocksDBPHP::Driver::incr, {
-            Php::ByVal("key", Php::Type::String),
-            Php::ByVal("incrVal", Php::Type::Numeric)
-        }),
-
-        RocksDBPphpDriver.method("isset", &RocksDBPHP::Driver::isset, {
-            Php::ByVal("key", Php::Type::String),
-            //Php::ByRef("val", Php::Type::String) not work. required fix at PHP-CPP
-        }),
-        RocksDBPphpDriver.method("__isset", &RocksDBPHP::Driver::isset, {
-            Php::ByVal("key", Php::Type::String)
-        }),
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        
         // add the class to the extension
-        extension.add(std::move(RocksDBPphpDriver));
+        extension.add(std::move( 
+        	Php::Class<RocksDBPHP::Driver>("RocksDB")
 
-        
+	        	.method("__construct", &RocksDBPHP::Driver::__construct, {
+		            Php::ByVal("path", Php::Type::String),
+		            Php::ByVal("cifm", Php::Type::Bool)
+		        })
+
+		        // GET
+		        .method("get", &RocksDBPHP::Driver::get, {
+		            Php::ByVal("key", Php::Type::String)
+		        })
+		        .method("__get", &RocksDBPHP::Driver::get, {
+		            Php::ByVal("key", Php::Type::String)
+		        })
+		        .method("mget", &RocksDBPHP::Driver::mget, {
+		            Php::ByVal("keys", Php::Type::Array)
+		        })
+
+		        // DEL
+		        .method("del", &RocksDBPHP::Driver::del, {
+		            Php::ByVal("key", Php::Type::String)
+		        })
+		        .method("__unset", &RocksDBPHP::Driver::del, {
+		            Php::ByVal("key", Php::Type::String)
+		        })
+		        .method("mdel", &RocksDBPHP::Driver::mdel, {
+		            Php::ByVal("keys", Php::Type::Array)
+		        })
+
+		        // SET
+		        .method("set", &RocksDBPHP::Driver::set, {
+		            Php::ByVal("key", Php::Type::String),
+		            Php::ByVal("val", Php::Type::String)
+		        })
+		        .method("__set", &RocksDBPHP::Driver::set, {
+		            Php::ByVal("key", Php::Type::String),
+		            Php::ByVal("val", Php::Type::String)
+		        })
+		        .method("mset", &RocksDBPHP::Driver::mset, {
+		            Php::ByVal("keys", Php::Type::Array),
+		            Php::ByVal("vals", Php::Type::Array)
+		        })
+		        // OTHER
+		        .method("getStatus", &RocksDBPHP::Driver::getStatus)
+
+		        .method("incr", &RocksDBPHP::Driver::incr, {
+		            Php::ByVal("key", Php::Type::String),
+		            Php::ByVal("incrVal", Php::Type::Numeric)
+		        })
+
+		        .method("isset", &RocksDBPHP::Driver::isset, {
+		            Php::ByVal("key", Php::Type::String),
+		            //Php::ByRef("val", Php::Type::String) not work. required fix at PHP-CPP
+		        })
+		        .method("__isset", &RocksDBPHP::Driver::isset, {
+		            Php::ByVal("key", Php::Type::String)
+		        })
+		    ));
+
+
+
+
+
         // return the extension module
         return extension;
     }
