@@ -90,7 +90,7 @@ extern "C"
 
 		        .method("isset", &RocksDBPHP::Driver::isset, {
 		            Php::ByVal("key", Php::Type::String),
-		            //Php::ByRef("val", Php::Type::String) not work. required fix at PHP-CPP
+		            Php::ByRef("val", Php::Type::String, false)
 		        })
 		        .method("__isset", &RocksDBPHP::Driver::isset, {
 		            Php::ByVal("key", Php::Type::String)

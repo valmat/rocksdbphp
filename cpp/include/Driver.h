@@ -225,9 +225,11 @@ namespace RocksDBPHP {
 	     * fast check exist key
 	     * function isset
 	     * @param string key
+	     * @param string value. If the value exists, it can be retrieved. But there is no guarantee that it will be retrieved
 	     * @return bool (true if key exist)
 	     */
-	    Php::Value isset(Php::Parameters &params) {
+	    Php::Value isset(Php::Parameters &params)
+	    {
 	        unsigned int sz = params.size();
 
 	        if (sz < 1) {
@@ -238,15 +240,9 @@ namespace RocksDBPHP {
 	        key   = params[0].stringValue();
 	        bool r = _db->KeyMayExist(rocksdb::ReadOptions(), key, &value);
 	        //It is not guaranteed that value will be determined
-	        //Php::out << "Get(" << key <<") = " << value << std::endl;
-	        //Php::out << "sz" << sz << std::endl;
-
-	        /*
 	        if (r && sz > 1) {
 	            params[1] = (Php::Value) value;
 	        }
-	        */
-
 	        return r;
 	    }
 
@@ -315,7 +311,8 @@ namespace RocksDBPHP {
 	     */
 	    void incr(Php::Parameters &params)
 	    {
-	        if (params.size() < 1) {
+	        if (params.size() < 1)
+	        {
 	            throw Php::Exception("Requires parameter: key");
 	            return;
 	        }
