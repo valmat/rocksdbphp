@@ -11,7 +11,7 @@ After compile and install rocksdbphp:
 exec `make` and `sudo make install`
 
 ## Usage
-    
+```php    
     // Init
     $rocks = new RocksDB('/tmp/wwwdb');
     
@@ -35,8 +35,7 @@ exec `make` and `sudo make install`
     echo $rocks->getStatus();
     
     // multiset
-    $toSet = array('skey1'=>'val1','skey2'=>'val2','skey3'=>'val3','skey4'=>'val4');
-    $rocks->mset( array_keys($toSet), array_values($toSet)  );
+    $rocks->mset( array('skey1'=>'val1','skey2'=>'val2','skey3'=>'val3','skey4'=>'val4')  );
     echo $rocks->getStatus();
     
     // multiget
@@ -49,6 +48,8 @@ exec `make` and `sudo make install`
     //same:
     isset($rocks->key1);
     //echo $rocks->getStatus(); // not supported for isset
+    // fast check and retrive
+    $rocks->isset('key1', $val);
     
     // incr
     // incriment/decriment (integer counter)
@@ -56,10 +57,11 @@ exec `make` and `sudo make install`
     $rocks->incr('ckey2', 5);
     $rocks->incr('ckey2', -2);
     echo $rocks->getStatus();
-
+```
 
 ## Note
 Currently under development
 
 ## License
 BSD
+
