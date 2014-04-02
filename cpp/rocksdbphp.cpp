@@ -19,6 +19,7 @@
 
 // includes
 #include "include/Int64Incrementor.h"
+#include "include/MultiGetResult.h"
 #include "include/Driver.h"
 
 
@@ -51,6 +52,10 @@ extern "C"
 		        .method("mget", &RocksDBPHP::Driver::mget, {
 		            Php::ByVal("keys", Php::Type::Object)
 		        })
+		        .method("mgetArray", &RocksDBPHP::Driver::mgetArrray, {
+		            Php::ByVal("keys", Php::Type::Object)
+		        })
+
 
 		        // DEL
 		        .method("del", &RocksDBPHP::Driver::del, {
@@ -92,6 +97,13 @@ extern "C"
 		        })
 		    ));
 
+
+        // add the class to the extension
+        extension.add(std::move( 
+        	Php::Class<RocksDBPHP::MultiGetResult>("RocksDB\\MultiGetResult")
+	        	// Prohibited to create instances of this class by other way than through method RocksDB::mget()
+	        	.method("__construct", &RocksDBPHP::MultiGetResult::__construct, Php::Private)
+		));
 
         // return the extension module
         return extension;

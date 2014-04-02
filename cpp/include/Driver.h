@@ -154,7 +154,7 @@ namespace RocksDBPHP {
 	     * get array values by array keys
 	     * function mget
 	     * @param Php::Array keys
-	     * @return Php::Array rezult
+	     * @return Php::Object MultiGetResult (`RocksDB\MultiGetResult`)
 	     */
 	    Php::Value mget(Php::Parameters &params)
 	    {
@@ -167,6 +167,27 @@ namespace RocksDBPHP {
 	            return false;
 	        }
 
+	        return Php::Object("RocksDB\\MultiGetResult", new MultiGetResult(params, _db));
+	    }
+
+	    /**
+	     * get array values by array keys
+	     * function mget
+	     * @param Php::Array keys
+	     * @return Php::Array rezult
+	     */
+	    Php::Value mgetArrray(Php::Parameters &params)
+	    {
+	        if (params.size() < 1) {
+	            throw Php::Exception("Requires 1 parameter: array keys or itarable object");
+	            return false;
+	        }
+	        if(!params[0].isArray() && !params[0].isObject()) {
+	            throw Php::Exception("Required parameters is array or itarable object");
+	            return false;
+	        }
+
+	        // this array will be returned as a result
 	        Php::Value rez;
 	        
 	        // keys array
@@ -192,6 +213,7 @@ namespace RocksDBPHP {
 	        // result statuses
 	        std::vector<rocksdb::Status> statuses(arrSize);
 
+	        // filling values
 	        statuses = _db->MultiGet(rocksdb::ReadOptions(), keys, &values);
 	        
 	        for (unsigned int i = 0; i < arrSize; i++) {
@@ -215,9 +237,7 @@ namespace RocksDBPHP {
 	        }
 	        std::string key, value;
 	        key   = params[0].stringValue();
-	        bool r;
-
-	        r = _db->KeyMayExist(rocksdb::ReadOptions(), key, &value);
+	        bool r = _db->KeyMayExist(rocksdb::ReadOptions(), key, &value);
 	        //It is not guaranteed that value will be determined
 	        //Php::out << "Get(" << key <<") = " << value << std::endl;
 	        //Php::out << "sz" << sz << std::endl;
