@@ -1,9 +1,9 @@
 #!/usr/bin/php
 <?php
 
-require "Rocks.php";
-require 'MgetIterator.php';
-require 'Response.php';
+require "src/Rocks.php";
+require 'src/MgetIterator.php';
+require 'src/Response.php';
 
 
 
