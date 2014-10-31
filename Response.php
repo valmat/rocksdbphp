@@ -68,13 +68,16 @@ class Response{
         if(feof($this->_sock)) {
             return NULL;
         }
-        $rezlen = (int)fgets($this->_sock);
-        if( $rezlen < 0 || feof($this->_sock) ) {
+        
+        $val_len = (int)$this->read();
+        
+        if($val_len < 0 || feof($this->_sock)) {
             return NULL;
         }
-        $rez = fgets($this->_sock);
-        
-        return (strlen($rez) > $rezlen) ? substr($rez, 0, $rezlen) : $rez;
+        $rez = $val_len ? $this->read($val_len+1) : '';
+        // skip '\n'
+        $this->read();
+        return $rez;
     }
     
     /**

@@ -25,7 +25,7 @@ class Client{
       *  get value by key
       */
     public function get($key) {
-        return $this->httpGet('/get', $key)->getValue();
+        return $this->httpGet('get', $key)->getValue();
     }
     
     /**
@@ -33,7 +33,7 @@ class Client{
       *  @return bool
       */
     public function keyExist($key, &$val = NULL) {
-        $resp = $this->httpGet('/exist', $key);
+        $resp = $this->httpGet('exist', $key);
         $rez = $resp->isOk();
         $val = $rez ? $resp->getValue() : NULL;
         return $rez;
@@ -44,7 +44,7 @@ class Client{
       *  @return MgetIterator
       */
     public function mget($keys) {
-        return $this->httpGet('/mget', implode('&', $keys))->getMultiValue();
+        return $this->httpGet('mget', implode('&', $keys))->getMultiValue();
     }
     
     /**
@@ -52,7 +52,7 @@ class Client{
       *  @return bool
       */
     public function set($key, $val) {
-        return $this->httpPost('/set', "$key\n".strlen($val)."\n$val")->isOk();
+        return $this->httpPost('set', "$key\n".strlen($val)."\n$val")->isOk();
     }
     
     /**
@@ -60,7 +60,7 @@ class Client{
       *  @return bool
       */
     public function mset($data) {
-        return $this->httpPost('/mset', $this->data2str($data) )->isOk();
+        return $this->httpPost('mset', $this->data2str($data) )->isOk();
     }
     
     /**
@@ -68,7 +68,7 @@ class Client{
       *  @return bool
       */
     public function del($key) {
-        return $this->httpPost('/del', $key)->isOk();
+        return $this->httpPost('del', $key)->isOk();
     }
     
     /**
@@ -76,7 +76,7 @@ class Client{
       *  @return bool
       */
     public function mdel($keys) {
-        return $this->httpPost('/mdel', implode("\n", $keys) )->isOk();
+        return $this->httpPost('mdel', implode("\n", $keys) )->isOk();
     }
     
     /**
@@ -86,8 +86,8 @@ class Client{
     public function incr($key, $value = NULL) {
         return  (
                     $value ?
-                    $this->httpPost('/incr', "$key\n$value" )->isOk() :
-                    $this->httpPost('/incr', $key )->isOk()
+                    $this->httpPost('incr', "$key\n$value" )->isOk() :
+                    $this->httpPost('incr', $key )->isOk()
                 );
     }
     
@@ -96,7 +96,7 @@ class Client{
       *  @return MgetIterator
       */
     public function tailing() {
-        return $this->httpPost('/tail')->getMultiValue();
+        return $this->httpPost('tail')->getMultiValue();
     }
     
     /**
@@ -104,8 +104,8 @@ class Client{
       *  @return Response
       */
     public function backup() {
-        return $this->httpPost('/backup');
-        //return $this->httpPost('/backup')->isOk();
+        return $this->httpPost('backup');
+        //return $this->httpPost('backup')->isOk();
     }
     
     /**
@@ -113,14 +113,14 @@ class Client{
       *  @return Response
       */
     public function stats() {
-        return $this->httpPost('/stats');
+        return $this->httpPost('stats');
     }
     
     /**
       *  POST request
       */
     private function httpPost($path, $data = NULL) {
-        $buf  = "POST $path HTTP/1.1\r\n";
+        $buf  = "POST /$path HTTP/1.1\r\n";
         $buf .= "Host:{$this->_host}\r\n";
         
         if(NULL !== $data) {
@@ -138,8 +138,8 @@ class Client{
     /**
       *  GET request
       */
-    private function httpGet($path, $data) {
-        $buf  = "GET $path?$data HTTP/1.1\r\n";
+    private function httpGet($path, $data = NULL) {
+        $buf  = $data ? "GET /$path?$data HTTP/1.1\r\n" : "GET /$path HTTP/1.1\r\n";
         $buf .= "Host:{$this->_host}\r\n";
         $buf .= "Content-Type:charset=UTF-8\r\n";
         $buf .= "Connection: Close\r\n\r\n";
@@ -150,18 +150,28 @@ class Client{
       *  @param string request
       */
     private function request(&$req) {
-        if( !($this->sock = fsockopen($this->_host, $this->_port, $errno, $errstr)) ){
+        if( !($sock = @fsockopen($this->_host, $this->_port, $errno, $errstr)) ){
             throw new Exception("Unable to create socket: $errstr ($errno)");
         }
-        fwrite($this->sock, $req);
+        fwrite($sock, $req);
+        
+        // Check response status
+        if( feof($sock) ){
+            throw new Exception("Empty response");
+        }
+        $status = substr(fgets($sock), 9);
+        
+        if( feof($sock) || '200' !==substr($status, 0, 3) ){
+            throw new Exception("Status error: $status");
+        }
         
         // skip headers
         $s = '';
-        while (!feof($this->sock) && "\r\n" !== $s) {
-            $s =  fgets($this->sock);
+        while (!feof($sock) && "\r\n" !== $s) {
+            $s =  fgets($sock);
         }
         
-        return new Response($this->sock);
+        return new Response($sock);
     }
     
     /**

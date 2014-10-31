@@ -59,17 +59,8 @@ class MgetIterator implements \Iterator {
         if( !($this->_valid = $this->_resp->isValid() ) ){
             return;
         }
-        
         $this->_key = substr($this->_resp->read(), 0, -1);
-        $val_len = (int)$this->_resp->read();
-        if($val_len < 0) {
-            $this->_val = NULL;
-            return;
-        }
-        $this->_val = $val_len ? $this->_resp->read($val_len+1) : '';
-        
-        // skip '\n'
-        $this->_resp->read();
+        $this->_val = $this->_resp->getValue();
     }
 
     /**
@@ -88,9 +79,6 @@ class MgetIterator implements \Iterator {
             var_dump($value);
         }
     }
-    
-    
-
     
 }
 
