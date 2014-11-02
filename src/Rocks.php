@@ -40,7 +40,7 @@ class Client{
     }
     
     /**
-      *  multi get values by keys
+      *  multi get key-value pairs by keys
       *  @return MgetIterator
       */
     public function mget($keys) {
@@ -92,11 +92,19 @@ class Client{
     }
     
     /**
-      *  multi get values by keys
+      *  multi get all key-value pairs
       *  @return MgetIterator
       */
     public function tailing() {
         return $this->httpPost('tail')->getMultiValue();
+    }
+    
+    /**
+      *  multi get key-value pairs by key-prefix
+      *  @return MgetIterator
+      */
+    public function prefit($prefix) {
+        return $this->httpGet('prefit', $prefix)->getMultiValue();
     }
     
     /**

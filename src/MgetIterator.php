@@ -75,7 +75,7 @@ class MgetIterator implements \Iterator {
       */
     public function show() {
         foreach($this as $key => $value) {
-            echo "$key\t=>\t";
+            echo "[$key]\t=>\t";
             var_dump($value);
         }
     }

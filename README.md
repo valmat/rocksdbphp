@@ -6,7 +6,8 @@ First, you need to install RocksDB server [RocksServer](https://github.com/valma
 
 ## Usage
 
-```php    
+```php
+<?php
     require "Rocks.php";
     require 'MgetIterator.php';
     require 'Response.php';

@@ -25,19 +25,19 @@ $db->mget([])->show();
 
 
 --EXPECT--
-key1	=>	string(4) "val1"
-key2	=>	string(4) "val2"
-key3	=>	string(4) "val3"
+[key1]	=>	string(4) "val1"
+[key2]	=>	string(4) "val2"
+[key3]	=>	string(4) "val3"
 
 
-key1	=>	string(4) "val1"
-	=>	NULL
-key2	=>	string(4) "val2"
-noexist	=>	NULL
-key3	=>	string(4) "val3"
+[key1]	=>	string(4) "val1"
+[]	=>	NULL
+[key2]	=>	string(4) "val2"
+[noexist]	=>	NULL
+[key3]	=>	string(4) "val3"
 
 
-key1	=>	string(4) "val1"
+[key1]	=>	string(4) "val1"
 
 
 mget([]):

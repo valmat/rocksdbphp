@@ -138,3 +138,17 @@ echo PHP_EOL, PHP_EOL;
 var_export($db->backup()->raw());
 echo PHP_EOL, PHP_EOL;
 */
+
+# Test prefit (prefix iterator)
+/*
+$prefix = 'pref1:';
+$key1 = $prefix . mt_rand(1,100);
+$key2 = $prefix . mt_rand(1,100);
+$key3 = $prefix . mt_rand(1,100);
+
+var_export($db->mset([$key1 => 'v1' . mt_rand(0,500), $key2 => 'v2' . mt_rand(0,500), $key3 => 'v3' . mt_rand(0,500)]));
+echo PHP_EOL;
+//$prefix .= "~";
+$db->prefit($prefix)->show();
+*/
+

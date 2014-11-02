@@ -24,13 +24,13 @@ $db->mget([$key1, $key2, $key3])->show();
 
 
 --EXPECT--
-mskey1	=>	NULL
-mskey2	=>	NULL
-mskey3	=>	NULL
+[mskey1]	=>	NULL
+[mskey2]	=>	NULL
+[mskey3]	=>	NULL
 
 
 true
 
-mskey1	=>	string(5) "ms:v1"
-mskey2	=>	string(5) "ms:v2"
-mskey3	=>	string(5) "ms:v3"
+[mskey1]	=>	string(5) "ms:v1"
+[mskey2]	=>	string(5) "ms:v2"
+[mskey3]	=>	string(5) "ms:v3"
