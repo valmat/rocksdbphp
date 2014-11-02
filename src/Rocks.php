@@ -92,19 +92,13 @@ class Client{
     }
     
     /**
-      *  multi get all key-value pairs
+      *  multi get all key-value pairs (by key-prefix)
       *  @return MgetIterator
       */
-    public function tailing() {
-        return $this->httpPost('tail')->getMultiValue();
-    }
-    
-    /**
-      *  multi get key-value pairs by key-prefix
-      *  @return MgetIterator
-      */
-    public function prefit($prefix) {
-        return $this->httpGet('prefit', $prefix)->getMultiValue();
+    public function getall($prefix = NULL) {
+        return (NULL === $prefix) ?
+            $this->httpGet('tail')->getMultiValue() :
+            $this->httpGet('prefit', $prefix)->getMultiValue();
     }
     
     /**

@@ -26,11 +26,13 @@ $rocks->set('key1', 'value1');
 $rocks->del('key2');
 
 // multiset
-$rocks->mset( array('skey1'=>'val1','skey2'=>'val2','skey3'=>'val3','skey4'=>'val4')  );
+$rocks->mset( array('key1'=>'val1','key2'=>'val2','key3'=>'val3','key4'=>'val4')  );
+// or if class CustomIterator implements Traversable
+$rocks->mset( new CustomIterator() );
 
 // multiget
-$iter = $rocks->mget(array('skey1','skey2','skey3','skey4'));
-foreach($$iter as $key => $value) {
+$iter = $rocks->mget(array('key1','key2','key3','key4'));
+foreach($iter as $key => $value) {
     echo "$key => $value\n";
 }
 
@@ -42,13 +44,17 @@ $rocks->keyExist('key1', $val);
 
 // incr
 // incriment/decriment (integer counter)
-$rocks->incr('ckey1');
-$rocks->incr('ckey2', 5);
-$rocks->incr('ckey2', -2);
+$rocks->incr('key1');
+$rocks->incr('key2', 5);
+$rocks->incr('key2', -2);
 
-// prefix iterator
-$iter = $rocks->prefit('pref:');
-foreach($$iter as $key => $value) {
+// prefix iterator (key-value pairs by key-prefix)
+$iter = $rocks->getall('pref:');
+foreach($iter as $key => $value) {
+    echo "$key => $value\n";
+}
+// or so (all key-value pairs):
+foreach($rocks->getall() as $key => $value) {
     echo "$key => $value\n";
 }
 
