@@ -39,7 +39,7 @@ foreach($iter as $key => $value) {
 // isset
 // fast check exist key
 $rocks->keyExist('key1');
-// fast check and retrive
+// fast check and retrieve
 $rocks->keyExist('key1', $val);
 
 // incr
