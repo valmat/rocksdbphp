@@ -38,8 +38,8 @@ class Client extends \RocksServer\Client
     }
     
     /**
-      *  ping
-      *  
+      *  wstats -- wide statistic
+      *
       *  Valid property names include:
       *
       *  "rocksdb.num-files-at-level<N>" - return the number of files at level <N>,
@@ -69,11 +69,4 @@ class Client extends \RocksServer\Client
         return $this->wstats('sstables');
     }
     
-    
-    
-    
-    
-    
-    
-
 }

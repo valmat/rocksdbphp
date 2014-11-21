@@ -69,7 +69,8 @@ class KeyIterator implements \Iterator {
     }
         
     /**
-      *   Checks if current position is valid
+      *   Set current value
+      *   This method can be overloaded in derived classes
       */
     protected function setValue() {
         $this->_val = $this->_resp->read();

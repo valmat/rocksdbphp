@@ -20,7 +20,7 @@ class BackupInfo
     private $_time;
     
     /**
-      *   Backup in bytes
+      *   Backup size in bytes
       */
     private $_size;
     
@@ -60,7 +60,7 @@ class BackupIterator implements \Iterator, \Countable  {
     private $_valid;
     
     /**
-      *   Iterator is valid
+      *   Backups count
       */
     private $_size;
     
