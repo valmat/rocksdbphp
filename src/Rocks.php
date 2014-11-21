@@ -3,7 +3,7 @@
  *  API for RocksServer
  *
  *  @author valmat <ufabiz@gmail.com>
- *  @github https://github.com/valmat/rocksserver
+ *  @github https://github.com/valmat/rocksdbphp
  */
 namespace RocksServer;
 
@@ -106,10 +106,17 @@ class Client{
       *  @return Response
       */
     public function backup() {
-        return $this->httpPost('backup');
-        //return $this->httpPost('backup')->isOk();
+        return $this->httpPost('backup')->isOk();
     }
-    
+        
+    /**
+      *  backup database
+      *  @return Response
+      */
+    public function backupInfo() {
+        return new BackupIterator( $this->httpPost('backup/info') );
+    }
+        
     /**
       *  retrive server statistic
       *  @return Response
@@ -121,7 +128,7 @@ class Client{
     /**
       *  POST request
       */
-    private function httpPost($path, $data = NULL) {
+    protected function httpPost($path, $data = NULL) {
         $buf  = "POST /$path HTTP/1.1\r\n";
         $buf .= "Host:{$this->_host}\r\n";
         
@@ -140,7 +147,7 @@ class Client{
     /**
       *  GET request
       */
-    private function httpGet($path, $data = NULL) {
+    protected function httpGet($path, $data = NULL) {
         $buf  = $data ? "GET /$path?$data HTTP/1.1\r\n" : "GET /$path HTTP/1.1\r\n";
         $buf .= "Host:{$this->_host}\r\n";
         $buf .= "Content-Type:charset=UTF-8\r\n";

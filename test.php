@@ -1,9 +1,11 @@
 #!/usr/bin/php
 <?php
 
-require "src/Rocks.php";
+require 'src/Rocks.php';
 require 'src/MgetIterator.php';
 require 'src/Response.php';
+require 'src/BackupIterator.php';
+
 
 
 
@@ -134,8 +136,7 @@ echo PHP_EOL, PHP_EOL;
 
 # Backup
 /*
-//var_export($db->backup()->isOk());
-var_export($db->backup()->raw());
+//var_export($db->backup());
 echo PHP_EOL, PHP_EOL;
 */
 
@@ -155,4 +156,11 @@ $db->getall($prefix)->show();
 # Test getall (all key-value pairs)
 /*
 $db->getall()->show();
+*/
+
+# Backup info
+/*
+var_export($db->backupInfo()->size());
+$db->backupInfo()->show();
+echo PHP_EOL, PHP_EOL;
 */

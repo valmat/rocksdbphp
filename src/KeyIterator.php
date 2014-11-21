@@ -1,25 +1,24 @@
 <?php
 /**
- *  API for RocksServer
- *  Multi get result iterator
+ *  Key iterator
+ *  The iterator for progressive output
  *
  *  @author valmat <ufabiz@gmail.com>
  *  @github https://github.com/valmat/rocksdbphp
  */
 namespace RocksServer;
 
-class MgetIterator implements \Iterator {
+class KeyIterator implements \Iterator {
     
     /**
       *   Response object
       */
-    private $_resp = NULL;
+    protected $_resp;
     
     /**
-      *   Current key and value
+      *   Current value
       */
-    private $_key;
-    private $_val;
+    protected $_val;
     
     /**
       *   Iterator is valid
@@ -42,7 +41,7 @@ class MgetIterator implements \Iterator {
       *   Return the key of the current element
       */
     public function key() {
-        return $this->_key;
+        return NULL;
     }
     
     /**
@@ -59,8 +58,7 @@ class MgetIterator implements \Iterator {
         if( !($this->_valid = $this->_resp->isValid() ) ){
             return;
         }
-        $this->_key = substr($this->_resp->read(), 0, -1);
-        $this->_val = $this->_resp->getValue();
+        $this->setValue();
     }
 
     /**
@@ -69,13 +67,20 @@ class MgetIterator implements \Iterator {
     public function valid() {
         return $this->_valid;
     }
+        
+    /**
+      *   Checks if current position is valid
+      */
+    protected function setValue() {
+        $this->_val = $this->_resp->read();
+    }
+    
     
     /**
       *  Show debug info
       */
     public function show() {
-        foreach($this as $key => $value) {
-            echo "[$key]\t=>\t";
+        foreach($this as $value) {
             var_dump($value);
         }
     }
