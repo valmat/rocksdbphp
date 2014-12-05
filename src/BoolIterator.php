@@ -5,7 +5,7 @@
  *  @author valmat <ufabiz@gmail.com>
  *  @github https://github.com/valmat/rocksdbphp
  */
-namespace RocksServer;
+namespace RocksServer\RocksDB;
 
 class BoolIterator extends KeyIterator {
        

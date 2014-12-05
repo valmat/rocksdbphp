@@ -6,7 +6,7 @@
  *  @author valmat <ufabiz@gmail.com>
  *  @github https://github.com/valmat/rocksserver
  */
-namespace RocksServer;
+namespace RocksServer\RocksDB;
 
 class Response{
     

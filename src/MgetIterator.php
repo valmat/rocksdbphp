@@ -6,14 +6,14 @@
  *  @author valmat <ufabiz@gmail.com>
  *  @github https://github.com/valmat/rocksdbphp
  */
-namespace RocksServer;
+namespace RocksServer\RocksDB;
 
 class MgetIterator implements \Iterator {
     
     /**
       *   Response object
       */
-    private $_resp = NULL;
+    protected $_resp = NULL;
     
     /**
       *   Current key and value
@@ -57,10 +57,11 @@ class MgetIterator implements \Iterator {
       */
     public function next() {
         if( !($this->_valid = $this->_resp->isValid() ) ){
-            return;
+            return false;
         }
         $this->_key = substr($this->_resp->read(), 0, -1);
         $this->_val = $this->_resp->getValue();
+        return true;
     }
 
     /**
