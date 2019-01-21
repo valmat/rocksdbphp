@@ -6,10 +6,11 @@
  *  @github https://github.com/valmat/rocksdbphp
  */
 namespace RocksServer\RocksDB;
+// namespace RocksServer;
 
 class Exception extends \Exception {}
 
-class Client{
+class Client {
     /**
       *   host and port
       */

@@ -229,7 +229,7 @@ $ini_overwrites = array(
 		'display_startup_errors=1',
 		'log_errors=0',
 		'html_errors=0',
-		'track_errors=1',
+		// 'track_errors=1',
 		'report_memleaks=1',
 		'report_zend_debug=0',
 		'docref_root=',
@@ -2816,12 +2816,3 @@ function junit_finish_timer($file_name) {
 	$JUNIT['files'][$file_name]['total'] += microtime(true) - $start;
 	unset($JUNIT['files'][$file_name]['start']);
 }
-
-/*
- * Local variables:
- * tab-width: 4
- * c-basic-offset: 4
- * End:
- * vim: noet sw=4 ts=4
- */
-?>
